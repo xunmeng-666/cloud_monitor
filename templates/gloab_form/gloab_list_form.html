@@ -1,0 +1,323 @@
+{% extends 'bash/base-index.html' %}
+{% block centent %}
+{% load cloud_tag %}
+<div id="content">
+<!--breadcrumbs-->
+    <div id="content-header">
+        <div id="breadcrumb"> <a href="/" title="Go to Home" class="tip-bottom"><i class="icon-home"></i> Home</a></div>
+    </div>
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins" id="all">
+            <div class="quick-actions">
+            {% build_meta_name admin_class %}
+                <p></p>
+            </div>
+
+            <form >
+                <div class="row-fluid">
+                    <div class="span3">
+                        <div class=" col-sm-1">
+                            {% if model_name == 'heketi_auth' %}
+                            <a href="/heketi_add/{{ app_name }}/{{ model_name }}/" class="btn btn-sm btn-primary">添加服务器</a>
+                            {% else %}
+                                <a onclick="master_ns_add(this)" class="btn btn-sm btn-primary">添加集群</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="span6"></div>
+                </div>
+            </form>
+            <hr>
+            <form method="post" onsubmit="return FormVerification(this)">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            {% if not admin_class.list_filter %}
+                                {{ model_name }}
+                            {% endif %}
+                            <th class='text-center' style='width: 50px;'>
+                                <input onclick="checkAll(this)" type="checkbox" />
+                            </th>
+                            {% for column in admin_class.list_filter %}
+                            <th class="text-center">{{ column }}</th>
+                            {% endfor %}
+                            {% if model_name == 'heketi_cluster' %}
+                                <th class="text-center">Node</th>
+                            <th class="text-center" style='width: 300px;'>操作</th>
+                            {% elif model_name == 'heketi_node' %}
+                            {% elif model_name == 'heketi_auth' %}
+
+                                <th class="text-center" style='width: 200px;'>操作</th>
+                            {% else %}
+                            <th class="text-center " style='width: 100px;'>详细信息</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in querysets %}
+                            {% if model_name == 'heketi_cluster' %}
+                                {% build_table_row row admin_class model_name  %}
+                                <th><a>加载中...</a></th>
+                                {% build_table_func row  model_name %}
+                            {% else %}
+                                {% build_table_row row admin_class model_name  %}
+                                {% build_table_func row  model_name %}
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </form>
+            <div class="content">
+                <tr>
+                    <td><input onclick="btn_del(this)"  type='button' class='btn btn-danger btn-sm ' value='删除' /></td>
+                </tr>
+            </div>
+
+            <div class="pagination">
+                <ul class="pagination">
+                    <li class=""><a href="?_page=1{{ filter_condtions_string }}">首页 </a></li>
+                    {% for p in paginator.page_range %}
+{#                        {% get_abs_value  p querysets.number as i %} <!--i变量是当前页与循环的次数的差的绝对值 -->#}
+
+                         {% if i < 3 %}
+                            {% if p == querysets.number %}
+                                <li class="active"><a href="?_page={{ p }}{{ filter_condtions_string }}&_o={{ last_orderby_key }}">{{ p }} </a></li>
+                            {% else %}
+                                <li class=""><a href="?_page={{ p }}{{ filter_condtions_string }}&_o={{ last_orderby_key }}">{{ p }}</a></li>
+
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    <li class="">
+                        <a  href="?_page={{ paginator.num_pages }}{{ filter_condtions_string }}&_o={{ last_orderby_key }}">尾页</a>
+                    </li>
+                    <li class="">
+                        <a>总计 {{ querysets.paginator.num_pages }}页</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+    function master_ns_add(self) {
+        console.log('cluster.length',$("#cluster").length);
+        if($('#cluster').length>0){
+            var url = "clusters";
+        }else {
+            var url = 'nodes';
+        }
+        $.ajax({
+            url: "/"+url+"/{{ app_name }}/{{ model_name }}",
+            type: 'POST',
+            success:function (data) {
+                var add_status = JSON.parse(data);
+                console.log('data',add_status);
+                c_id = add_status.id;
+                if(add_status){
+                    alert("创建了一个空的集群"+':'+ c_id)
+                }
+                else {
+                    alert('集群创建失败');
+                }
+            }
+        })
+    }
+
+    function checkAll(self) {
+        if ( $(self).prop('checked')){
+
+            $("table .row-obj").prop('checked',true)
+        }
+        else {
+             $("table .row-obj").prop('checked',false)
+        }
+
+    }
+
+    function del_cluster(self) {
+        console.log('删除被点击');
+        var cid = $(this).closest('tr').find('th').eq(2).text();
+        console.log('cid',$(this).text());
+    }
+
+    function btn_del(self) {
+        var check=document.getElementsByName('_selected_obj');
+            var len = check.length;
+            console.log('len',len);
+            var idAll="";
+            for (var i =0;i<len;i++){
+                console.log('循环中');
+                if(check[i].checked){
+                    console.log(check[i]);
+                    idAll += check[i].value+",";
+                }
+            }
+            if(idAll=='') {
+                console.log('判断idAll');
+                var td_id = $(this).closest('tr').find('th').eq(1).text();
+                idAll = td_id+',';
+            }
+            console.log('执行ajax');
+            $.ajax({
+                url:"/auto_del_cluster/{{ app_name }}/{{ model_name }}/?idAll=" + idAll,
+                type:'post',
+                success:function (data) {
+                    var del_status = JSON.parse(data);
+                    if(del_status.status==true){
+                        alert('删除成功');
+                        window.location.reload();
+                    }else {
+                        alert('删除失败' + del_status.error +"非空集群，无法删除")
+                    }
+                }
+            })
+    }
+
+    $("tbody [id=state]").each(function () {
+        var text_content = $(this).text();
+        if(text_content =='online' ){
+            $(this).css("background-color","#2afc3e");
+
+        }else {
+            $(this).css("background-color", "#FF0000")
+        }
+    });
+
+    $("tbody [id=status]").each(function () {
+        var text_content = $(this).text();
+        var conn = $(this).closest('tr').find('th').eq(6);
+        console.log('conn',conn);
+        if(text_content =='已连接' ){
+            $(this).css("background-color","#2afc3e");
+            conn.find('a').eq(1).html('断开');
+        }
+    });
+
+
+
+
+    $("tbody [id=info_cluster]").each(function () {
+
+
+        var cid = $(this).closest('tr').find('th').eq(1).text();
+        var list_func = $(this).closest('tr').find('th');
+        console.log('cid--',cid);
+        console.log('cid',cid);
+        console.log('this',$(this).length);
+        id_All ="";
+        for (var i = 0;i < $(this).length ;i++){
+{#        for (var i = 0;i < 2;i++){#}
+            console.log('this[i]',$.trim(cid+','));
+            id_All += $.trim(cid);
+        }
+        console.log('id_list',id_All);
+        get_id_info11(list_func,id_All);
+    });
+    function get_id_info11(list_func,id_All) {
+        console.log('Get ID Info');
+        console.log('list_func',list_func.eq(2).text());
+        $.ajax({
+            url: '/get_cluster_info/?idAll='+id_All,
+            type: 'get',
+            success:function (data) {
+                var data_dict = JSON.parse(data);
+                node_info = 0;
+                volume_info = 0;
+
+                list_func.eq(2).find('a').remove();
+                if(data_dict.nodes.length<=0){
+                    list_func.eq(2).html("<a style='color:#d43f3a'> Null </a>");
+                }
+
+                else {
+                    list_func.eq(2).html("<a style='color:#1CD61C'> UnNull </a>");
+                    list_func.eq(3).find('a').attr("disabled",true);
+                }
+
+            }
+        })
+    }
+
+    function set_status(conn) {
+        console.log('设置状态');
+        var status = conn.closest('tr').find('th').eq(5);
+        status.html('连接中....');
+{#        console.log('status',status.html('连接中....'))#}
+    }
+
+    $(function () {
+        $(".conn_haketi").on('click',function () {
+            var h_id = $(this).closest('tr').find('th').eq(3).text();
+
+{#            var status = conn.closest('tr').find('th').eq(5);#}
+            if($(this).text() == '连接'){
+                console.log('连接被点击',h_id);
+                set_status($(this));
+                $.ajax({
+                    url: "/conn_heketi/?hosts="+h_id,
+                    type:'get',
+                    success:function (data) {
+                        var data_dict = JSON.parse(data);
+                        if(data_dict.status == true){
+
+                            location.reload();
+                        }
+                        else if(data_dict.status == false){
+                            console.log('连接失败');
+                            $(this).closest('tr').find('th').eq(5).html('未连接');
+                            alert("连接主机失败，请检查网络连接" )
+                        }
+                    }
+                })
+            }else {
+                $.ajax({
+                    url:"/disconnect/?hosts="+h_id,
+                    type: 'get',
+                    success:function (data) {
+                        var data_dict = JSON.parse(data);
+                        if(data_dict.status == true){
+                            location.reload();
+                        }
+                        else {
+                            console.log('断开失败');
+
+                            alert("主机断开失败，请检查网络连接" );
+                            location.reload();
+                        }
+                    }
+                })
+            }
+        });
+
+        $(".del_heketi").on('click',function () {
+            console.log('删除被点击');
+            var h_id = $(this).closest('tr').find('th').eq(3).text();
+            var h_status = $(this).closest('tr').find('th').eq(5).text();
+            if(h_status=='已连接'){
+                alert('不能删除已连接的主机，如果要删除已连接的主机，请先断开连接')
+            }
+            else {
+                $.ajax({
+                    url:"/del_heketi/?hosts="+h_id,
+                    type:'get',
+                    success:function (data) {
+                        var data_dict = JSON.parse(data);
+                        if(data_dict.status == true){
+                            location.reload();
+                        }
+                        else {
+                            alert("主机删除失败，错误信息:%s" %data_dict.error)
+                        }
+                    }
+                })
+            }
+        })
+    });
+
+
+</script>
+{% endblock %}

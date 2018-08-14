@@ -1,0 +1,99 @@
+{% extends 'bash/base-index.html' %}
+{% block centent %}
+{% load deploy_tag %}
+
+<div id="content-header">
+    <div id="breadcrumb"> <a href="index.html" class="tip-bottom" data-original-title="Go to Home">
+        <i class="icon-home"></i> Home ></a>
+        <a href="/deploy/" class="tip-bottom" data-original-title="">{% build_project_name admin_class %}></a>
+        <a href="#" class="current">{% build_project_name admin_class %}</a> </div>
+    <h1>{{ model_name }}</h1>
+</div>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span12">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">添加配置信息</h4>
+            </div>
+        </div>
+        <br>
+        <div class="span12" style="width: 90%">
+            <div class="widget-box">
+                <div id="generalTabContent" class="tab-content responsive">
+                    <div id="alert-tab" class="tab-pane fade in active">
+                        <form method="post" >{% csrf_token %}
+                            <div class="modal-body">
+                                <div class="modal-body" >
+                                     <form class="form-horizontal" method="post">{% csrf_token %}
+                                    {% for field in form_obj %}
+                                        <div class="form-group ">
+                                            <label class=" span1" style="vertical-align: middle;font-size: 12px">{{ field.label }}：</label>
+                                            {% if field.name == 'ipaddress' %}
+                                                <input type="test" name="{{ field.name }}" onclick="ipaddress(this)" style=" vertical-align:middle;line-height: 20px;">
+                                            {% else %}
+                                                {{ field }}
+                                            {% endif %}
+                                            <span style="color: red">{{ field.errors.0 }}  </span>
+                                        </div>
+                                        <br>
+                                    {% endfor %}
+                                     </form>
+                                </div>
+                                 <div class="form-group">
+                                    <div class="span8">
+                                        <input type="button"  onclick="SelectAllSave(this)" class="btn btn-info" value="保存">
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+
+
+function all_del_set(self) {
+    var check = document.getElementsByName("_selected_obj");
+    var len = check.length;
+    var idAll = "";
+    for (var i = 0; i<len;i++){
+        if(check[i].checked){
+            idAll += check[i].value+',';
+        }
+    }
+    if(idAll == ''){
+        var td_id = $(this).closest('tr').find('th').eq(0).val();
+        idAll = td_id + ',' ;
+    }
+    console.log('idall',idAll)
+    $.ajax({
+        url:"/deployment/settings/del_settings/?idAll=" + idAll,
+        type: 'post',
+        success:function (data) {
+            alert('删除成功');
+            location.reload(true)
+        }
+    })
+}
+
+
+function checkAll(self) {
+    if ( $(self).prop('checked')){
+
+        $("table .row-obj").prop('checked',true)
+    }else {
+         $("table .row-obj").prop('checked',false)
+    }
+
+}
+
+
+</script>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends 'bash/base-index.html' %}
+{% block centent %}
+{% load cloud_tag %}
+
+<div id="content-header">
+    <div id="breadcrumb"> <a href="index.html" class="tip-bottom" data-original-title="Go to Home">
+        <i class="icon-home"></i> Home ></a>
+        <a href="/nodes/" class="tip-bottom" data-original-title="">nodes ></a>
+        <a href="#" class="current">{{ node_name }}</a> </div>
+    <h1>节点{{ node_name }}信息</h1>
+</div>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span6">
+            <div class="widget-box">
+                <div class="widget-title">
+                    <span class="icon"> <i class="icon-align-justify"></i> </span>
+                    <h5>系统信息</h5>
+                </div>
+                <div class="widget-content nopadding">
+                    <div class="bs-example" id="horizontal-dl">
+                        <dl class="dl-horizontal">
+                            <dt>Docker版本</dt>
+                            <dd>{{ node_func.status.node_info.container_runtime_version }}</dd>
+                            <dt>Kernel版本</dt>
+                            <dd>{{ node_func.status.node_info.kernel_version }}</dd>
+                            <dt>Kubelet版本</dt>
+                            <dd>{{ node_func.status.node_info.kubelet_version }}</dd>
+                            <dt>服务器ID</dt>
+                            <dd>{{ node_func.status.node_info.machine_id }}</dd>
+                            <dt>系统类型</dt>
+                            <dd>{{ node_func.status.node_info.operating_system }}</dd>
+                            <dt>操作系统</dt>
+                            <dd>{{ node_func.status.node_info.os_image }}</dd>
+                            <dt>操作系统UUID</dt>
+                            <dd>{{ node_func.status.node_info.system_uuid }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="span6">
+            <div class="widget-box">
+                <div class="widget-title">
+{#                    <span class="icon"> <i class="icon icon-align-justify"></i> </span>#}
+                    <span class="icon"> <i class="icon-th-list"></i> </span>
+                    <h5>镜像列表</h5>
+                </div>
+                <div class="widget-content nopadding">
+                    <div class="bs-example" id="horizontal-dl">
+                        {% build_node_images node_func %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div class="span12">
+            <div class="widget-box">
+                <div class="widget-title">
+                    <span class="icon"> <i class="icon-th-list"></i> </span>
+                    <h5>系统资源</h5>
+                </div>
+                <div class="widget-content nopadding">
+                    <div class="bs-example" id="horizontal-dl">
+    {#                    {% build_system_resource node_func %}#}
+                        <dl class="dl-horizontal">
+                            <dt>主机类型</dt>
+                            {% for host_type in node_func.status.addresses %}
+                                <dd>{{ host_type.type }}</dd>
+                            {% endfor %}
+                            <dt>最大内存</dt>
+                            <dd>{{ node_func.status.capacity.memory }}</dd>
+                            <dt>可用内存</dt>
+                            <dd>{{ node_func.status.allocatable.memory }}</dd>
+                            <dt>CPU核数</dt>
+                            <dd>{{ node_func.status.capacity.cpu }}</dd>
+                            <dt>Pod数量</dt>
+                             <dd>{{ node_func.status.capacity.pods }}</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("tbody [id=ip_addr]").each(function () {
+        $(this).on('click',function () {
+            var ip_addr = $(this).text();
+            console.log('ip',ip_addr);
+            $.ajax({
+                url:"/nodes/node_info/?ip=" + ip_addr,
+                type: 'get',
+                success:function (data) {
+                    console.log('data',data)
+                }
+            })
+        })
+    })
+
+</script>
+{% endblock %}

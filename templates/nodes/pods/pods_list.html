@@ -1,0 +1,94 @@
+{% extends 'bash/base-index.html' %}
+{% block centent %}
+{% load cloud_tag %}
+
+ <div id="content-header">
+    <div id="breadcrumb"> <a href="/" title="Go to Home" class="tip-bottom"><i class="icon-home"></i>Home</a>
+        <div>
+            <div class="col-lg-1">
+                <select id="historical_data" >
+                    <option label="选择项目" value="now_data"></option>
+                    {% if namespace %}
+                        <option label="{{ namespace }}" value="{{ namespace }}"></option>
+                    {% else %}
+                        <option label="全部项目" value="all_data"></option>{% endif %}
+
+                    {% build_project_name %}
+                </select>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="col-sm-12">
+    <div class="ibox float-e-margins" id="all">
+        <div class="quick-actions" >
+            <h3>容器组</h3>
+            <p></p>
+        </div>
+    </div>
+</div>
+<hr/>
+<form method="post" onsubmit="return FormVerification(this)">{% csrf_token %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>名称</th>
+                <th>运行状态</th>
+                <th>命名空间</th>
+                <th>重启容器</th>
+                <th>创建时间</th>
+            </tr>
+        </thead>
+        <tbody class="pod_info" id="pod_info">
+        </tbody>
+    </table>
+</form>
+
+<script>
+
+$("#historical_data").change(function () {
+    setInterval(get_pod_info,5000);
+{#    get_pod_info()#}
+});
+
+function get_pod_info() {
+    namespaces = document.getElementById('historical_data').value;
+    if (namespaces == 'now_data'){}
+    else {
+        $.ajax({
+            url: '/cluster/pods/?project=' + namespaces,
+            type: 'post',
+            success: function (data) {
+                var pod_data = JSON.parse(data);
+                ele_tr = "<tr>";
+                for (info in pod_data) {
+                    console.log('data',info.status);
+                    ele_td = "<td onclick='pods_info(this)' style='cursor: pointer;'> \<" +
+                        "a href=/pods/"+pod_data[info].namespace +"/?pod_name="+pod_data[info].name+">"+ pod_data[info].name+ "</td>";
+                    if (pod_data[info].status == 'Running') {
+                        ele_td += "<td style='color: #18EC16'>" + pod_data[info].status + "</td>";
+                    }
+                    else if (pod_data[info].status == 'Failed') {
+                        ele_td += "<td style='color: #ec252f'>" + pod_data[info].status + "</td>";
+                    }
+                    else {
+                        ele_td += "<td style='color: #aa4136'>" + pod_data[info].status + "</td>";
+                    }
+                    ele_td += "<td>" + pod_data[info].namespace + "</td>";
+                    ele_td += "<td>" + pod_data[info].restart_count + "</td>";
+                    ele_td += "<td>" + pod_data[info].time + "</td>";
+                    ele_tr += ele_td + "</tr>"
+                }
+                $("#pod_info").html(ele_tr)
+            }
+        })
+    }
+}
+
+function pods_info() {
+    console.log('11',$(this))
+}
+
+</script>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'bash/base-index.html' %}
+{% block centent %}
+{% load cloud_tag %}
+
+
+<div id="content-header">
+    <div id="breadcrumb">
+        <a href="#" title="Go to Home" class="tip-bottom">
+        <i class="icon-home"></i>
+        Home
+      </a>
+      <a href="#" class="current">{{ name }}</a>
+    </div>
+    <h3>{{ name }}</h3>
+</div>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span6">
+            <div class="widget-box">
+                <div class="widget-title">
+                    <span class="icon"> <i class="icon-align-justify"></i> </span>
+                    <h5>系统状态</h5>
+                </div>
+                <div class="widget-content nopadding">
+                    <div class="bs-example">
+                        <dl class="dl-horizontal">
+                            <dt style="text-align: left">Status</dt>
+                            {% if pods_info.status.phase == 'Running' %}
+                            <dd class="iconrun"><span class="iconfont icon-xuanzhuan"></span> {{ pods_info.status.phase }}</dd>
+                            {% else %}
+                            <dd><span class="iconfont icon-stop-copy"></span> {{ pods_info.status.phase }}</dd>
+                            {% endif %}
+                        </dl>
+                    </div>
+                </div>
+                <div class="widget-content nopadding">
+                    <div class="bs-example">
+                        <h5>环境变量</h5>
+                        <dl class="dl-horizontal">
+                        {% for env in pods_info.spec.containers %}
+                        {% for name in env.env %}
+                            <dt style="width: 300px; text-align: left">{{ name.name }}</dt>
+                            <dd>{{ name.value }}</dd>
+                        {% endfor %}
+                        {% endfor %}
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="span6">
+            <div class="widget-box">
+                <div class="widget-title">
+                    <span class="icon"> <i class="icon-th-list"></i> </span>
+                    <h5>挂载信息</h5>
+                </div>
+                <div class="widget-content nopadding">
+                    <div class="bs-example" id="horizontal-dl">
+                        <h5>Containers</h5>
+                        <dl class="dl-horizontal">
+                            {% for images_info in pods_info.status.container_statuses %}
+                            <dt style="text-align: left" class="icon icon-align-justify"> 镜像名称</dt>
+                            <dd>{{ images_info.image }}</dd>
+                            <dt style="text-align: left" class="start_time icon icon-time">  启动时间</dt>
+                            <dd>{{ images_info.state.running.started_at }}</dd>
+                            <dt style="text-align: left" class="startd_time icon icon-time">  创建时间</dt>
+                            <dd>{{ images_info.last_state.terminated.finished_at }}</dd>
+                            {% endfor %}
+                        </dl>
+                    </div>
+                </div>
+                <h5>Mount</h5>
+                <div class="widget-content nopadding">
+                    <div class="bs-example" id="horizontal-dl">
+                        <ul class="activity-list">
+                            {% for mount_info in pods_info.spec.containers %}
+                            {% for info in mount_info.volume_mounts %}
+                            <li>
+                                <i class="icon-hdd"></i>
+                                <strong>{{ info.name }}</strong>&thinsp;→&thinsp;
+                                <strong>{{ info.mount_path }}</strong>
+                                {% if info.read_only == None %}
+                                <small class="text-muted ng-binding">read-write</small>
+                                {% else %}
+                                <small class="text-muted ng-binding">read-only</small>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <h5>Volumes</h5>
+                <div class="widget-content nopadding">
+                    <div class="bs-example" id="horizontal-dl" style="font-weight: bold">
+                        <dl class="dl-horizontal " >
+                            {% build_volume_info pods_info %}
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("tbody [id=pod_info]").on('click',function () {
+        pod_name = $(this).text();
+        ns_name = $(this).closest('tr').find('td').eq(2).text();
+        console.log('name',pod_name);
+        window.location.href="/pods/pod_info/?project="+ns_name+"&pods="+pod_name
+    });
+    $(function () {
+        start_time = document.getElementsByClassName('start_time');
+        console.log('start_time',start_time.text)
+
+    })
+
+</script>
+{% endblock %}

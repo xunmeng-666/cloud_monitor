@@ -1,0 +1,206 @@
+{% extends 'bash/base-index.html' %}
+{% block centent %}
+{% load deploy_tag %}
+
+<div id="content-header">
+    <div id="breadcrumb"> <a href="index.html" class="tip-bottom" data-original-title="Go to Home">
+        <i class="icon-home"></i> Home ></a>
+        <a href="/deploy/" class="tip-bottom" data-original-title="">{% build_project_name admin_class %}></a>
+        <a href="#" class="current">{% build_verbose_name admin_class %}</a> </div>
+    <h1>{% build_verbose_name admin_class %}</h1>
+</div>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span12">
+            <div class="span10"></div>
+            <div class="panel-heading span2" style="border: 0px solid">
+                <button type="button" class="btn btn-mini btn-success" data-toggle="modal" data-target="#myModal">添加</button>
+            </div>
+        </div>
+        <br>
+        <div class="span12" style="width: 90%">
+            <div class="widget-box">
+                <div id="generalTabContent" class="tab-content responsive">
+                    <div id="alert-tab" class="tab-pane fade in active">
+                        <form method="post" >{% csrf_token %}
+                            <table class="table table-bordered ">
+                                <thead>
+                                    <tr>
+                                        {% if not  admin_class.list_display %}
+                                            <th>{{ model_name }}</th>
+                                        {% else %}
+                                            <th class='text-center'>
+                                                <input onclick="checkAll(this)" type="checkbox" />
+                                            </th>
+                                            {% for column in admin_class.list_filter %}
+                                            <th class='text-center'>
+
+                                            {% if order_column == column  %}
+                                                {{ order_column }}
+                                            {% else %}
+                                                {{ column }}
+                                            {% endif %}
+                                            </th>
+                                            {% endfor %}
+                                            <th class='text-center' >操作</th>
+                                        {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody" class="tab-content responsive">
+                                    {% for row in querysets %}
+                                    <div class="col-lg-12">
+                                        <div method="post">
+                                            <tr class='gradeX '  >
+
+                                                <td class='text-center' style="text-align: center">
+                                                    <input type='checkbox'  class='row-obj' name ='_selected_obj'  value='{{ row.id }}'></td>
+                                                <td style="text-align: center">{{ row.get_name_display }}</td>
+                                                <td style="text-align: center">{{ row.ipaddress }}</td>
+                                                <td style="text-align: center">{{ row.ports }}</td>
+                                                <td style="text-align: center">{{ row.get_model_display }}</td>
+
+                                                <form method='POST'>
+                                                    {% csrf_token %}
+                                                    <td class="text-center" style="text-align: center">
+                                                        <a href="/deployment/del/?idAll={{ row.id }}" class="btn btn-mini btn-danger asset_del"  >删除</a>
+                                                    </td>
+                                                </form>
+                                            </tr>
+                                        </div>
+                                    </div>{% endfor %}
+                                </tbody>
+                            </table>
+                            <hr>
+                            <div class="content">
+                                <tr>
+                                    <td><input onclick="all_del_set(this) "  type='button' class='btn btn-danger btn-mini' value='删除' /></td>
+                                </tr>
+                            </div>
+                        </form>
+                        <div class="pagination">
+                            <ul class="pagination">
+                                <li class=""><a href="?_page=1{{ filter_condtions_string }}">首页 </a></li>
+                                {% for p in paginator.page_range %}
+                                    {% get_abs_value p  querysets.number as i %} <!--i变量是当前页与循环的次数的差的绝对值 -->
+                                    {% if i < 3 %}
+                                        {% if p == querysets.number %}
+                                            <li class="active"><a href="?_page={{ p }}{{ filter_condtions_string }}&_o={{ last_orderby_key }}">{{ p }} </a></li>
+                                        {% else %}
+                                            <li class=""><a href="?_page={{ p }}{{ filter_condtions_string }}&_o={{ last_orderby_key }}">{{ p }}</a></li>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                                <li class="">
+                                    <a  href="?_page={{ paginator.num_pages }}{{ filter_condtions_string }}&_o={{ last_orderby_key }}">尾页</a>
+                                </li>
+                                <li class="">
+                                    <a>总计 {{ querysets.paginator.num_pages }}页</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <form method="post" > {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">添加配置信息</h4>
+                </div>
+            <div class="modal-body">
+                <div class="modal-body" >
+                     <form class="form-horizontal" method="post">{% csrf_token %}
+                    {% for field in form_obj %}
+                        <div class="form-group ">
+                            <label class=" span1" style="vertical-align: middle;font-size: 12px">{{ field.label }}：</label>
+                            {% if field.name == 'ipaddress' %}
+                                <input type="test" name="{{ field.name }}" onclick="ipaddress(this)" style=" vertical-align:middle;line-height: 20px;">
+                            {% else %}
+                                {{ field }}
+                            {% endif %}
+                            <span style="color: red">{{ field.errors.0 }}  </span>
+                        </div>
+                        <br>
+                    {% endfor %}
+                     </form>
+                </div>
+                 <div class="form-group">
+                    <div class="span8">
+                        <input type="submit"  onclick="SelectAllm2mElements()" class="btn btn-info" value="保存">
+                    </div>
+                </div>
+            </div>
+        </div>
+        </form>
+    </div>
+</div>
+
+
+<script>
+
+
+function all_del_set(self) {
+    var check = document.getElementsByName("_selected_obj");
+    var len = check.length;
+    var idAll = "";
+    for (var i = 0; i<len;i++){
+        if(check[i].checked){
+            idAll += check[i].value+',';
+        }
+    }
+    if(idAll == ''){
+        var td_id = $(this).closest('tr').find('th').eq(0).val();
+        idAll = td_id + ',' ;
+    }
+    console.log('idall',idAll)
+    $.ajax({
+        url:"/deployment/settings/del_settings/?idAll=" + idAll,
+        type: 'post',
+        success:function (data) {
+            alert('删除成功');
+            location.reload(true)
+        }
+    })
+}
+
+
+function checkAll(self) {
+    if ( $(self).prop('checked')){
+
+        $("table .row-obj").prop('checked',true)
+    }else {
+         $("table .row-obj").prop('checked',false)
+    }
+
+}
+
+function SelectAllm2mElements() {
+    $("select[ele-type='right-select-ele'] option").prop("selected",true);
+}
+
+function FuzzySearch(self) {
+    var select_ele = $(self).next();
+    console.log($(self).val());
+    var search_text = $(self).val();
+    $(select_ele).children().each(function () {
+        //console.log($(this).text());
+        if ($(this).text().indexOf(search_text) == -1){ //not matches
+            console.log('not match',$(this).text());
+            $(this).css('color','black');
+
+        }else {
+            $(this).removeClass('hidden');
+            $(this).css('color','red');
+        }
+    })
+
+}
+
+</script>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'bash/base-index.html' %}
+{% block centent %}
+{% load cloud_tag %}
+
+ <div id="content-header">
+    <div id="breadcrumb"> <a href="/" title="Go to Home" class="tip-bottom"><i class="icon-home"></i>Home</a></div>
+</div>
+<div class="col-sm-12">
+    <div class="ibox float-e-margins" id="all">
+        <div class="quick-actions">
+            <h3>节点</h3>
+            <p></p>
+        </div>
+    </div>
+</div>
+<hr/>
+<form method="post" onsubmit="return FormVerification(this)">{% csrf_token %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>名称</th>
+                <th>角色</th>
+                <th>状态</th>
+                <th>CPU请求值(核)</th>
+                <th>CPU限制值(核)</th>
+                <th>内存请求值(字节)</th>
+                <th>内存限制值(字节)</th>
+                <th>创建时间</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for node_info in nodes.items %}
+                <tr>
+                    {% build_node_info node_info nodes %}
+                </tr><a href=""></a>
+            {% endfor %}
+        </tbody>
+    </table>
+</form>
+
+<script>
+    $("tbody [id=ip_addr]").each(function () {
+        $(this).on('click',function () {
+            var ip_addr = $(this).text();
+            console.log('ip',ip_addr);
+            $.ajax({
+                url:"/nodes/node_info/?ip=" + ip_addr,
+                type: 'get',
+                success:function (data) {
+                    console.log('data',data)
+                }
+            })
+        })
+    })
+
+</script>
+{% endblock %}

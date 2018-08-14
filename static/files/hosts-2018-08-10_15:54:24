@@ -1,0 +1,17 @@
+[nodes]
+10.211.55.5 ansible_ssh_user=root ansible_ssh_pass=benet123```
+10.211.55.4 ansible_ssh_user=root ansible_ssh_pass=benet123```
+10.211.55.12 ansible_ssh_user=root ansible_ssh_pass=benet123```
+10.211.55.13 ansible_ssh_user=root ansible_ssh_pass=benet123```
+
+[ntpdserver]
+10.211.55.5 ansible_ssh_user=root ansible_ssh_pass=benet123```
+10.211.55.4 ansible_ssh_user=root ansible_ssh_pass=benet123```
+10.211.55.12 ansible_ssh_user=root ansible_ssh_pass=benet123```
+10.211.55.13 ansible_ssh_user=root ansible_ssh_pass=benet123```
+
+[fileserver]
+10.211.55.5 ansible_ssh_user=root ansible_ssh_pass=benet123```
+10.211.55.4 ansible_ssh_user=root ansible_ssh_pass=benet123```
+10.211.55.12 ansible_ssh_user=root ansible_ssh_pass=benet123```
+10.211.55.13 ansible_ssh_user=root ansible_ssh_pass=benet123```
