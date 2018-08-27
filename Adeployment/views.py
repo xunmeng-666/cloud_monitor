@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 from django.shortcuts import render,redirect,HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate,login,logout
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
@@ -12,10 +11,13 @@ from Adeployment.core.model_ansible import build_file
 from Adeployment.core.model_func import save_file,delete_file
 from Adeployment.core.rabbitmqs import Rabbit_Consumer
 from Adeployment.core.logger import logger
+from Adeployment.conf.conf import LOGS_INFO
 from dwebsocket import require_websocket,accept_websocket
 import json
 import logging
 import threading
+import subprocess
+
 # Create your views here.
 
 def admin_func():
@@ -284,6 +286,7 @@ def echo_logs(request):
     if msg == 'quit':
         run_mq = Rabbit_Consumer()
         run_mq.rabbit_close()
+        request.websocket.close()
     elif msg == 'file':
         logs_name = request.GET.get('LogName')
         file = open(logs_name, 'r')
@@ -299,9 +302,19 @@ def echo_logs(request):
             request.websocket.send(content.encode('utf-8'))
         file.close()
         request.websocket.close()
+    elif msg == "system_logs":
+        file = subprocess.call(['tail','-f', LOGS_INFO],shell=False)
+        print 'send_file',file
+        request.websocket.send(file)
     else:
         run_mq = Rabbit_Consumer()
         run_mq.rabbit_consumer(request)
+
+
+@login_required
+def system_logs(request):
+
+    return render(request,'system/logs/system_logs.html')
 
 @login_required
 def settings(request,no_render=None):
@@ -330,7 +343,7 @@ def settings(request,no_render=None):
     if no_render:
         return locals()
     else:
-        return render(request, 'settings/settings.html', locals())
+        return render(request, 'system/settings/settings.html', locals())
 
 
 @csrf_exempt

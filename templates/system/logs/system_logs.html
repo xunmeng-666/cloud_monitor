@@ -1,0 +1,54 @@
+{% extends 'bash/base-index.html' %}
+{% block centent %}
+<div id="content-header">
+    <div id="breadcrumb"> <a href="index.html" class="tip-bottom" data-original-title="Go to Home">
+        <i class="icon-home"></i> Home ></a>
+        <a href="/system/logs/" class="tip-bottom" data-original-title="">system_logs</a>
+        <h1>系统日志</h1>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span12" style="width: 90%">
+            <div class="widget-box">
+                <div id="generalTabContent" class="tab-content responsive">
+                    <div id="note-tab" class="tab-pane fade" >
+                        <div class="row logs_display" id="display_log" style="display:block;height: 400px; overflow:scroll; border:1px solid;" >
+                            <ul class="scroll_bar" style="height:100%; margin: 0 0 10px 60px;"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+window.onload = function () {
+    console.log('开始websocket')
+    var urls = window.location.host;
+    var socket = new WebSocket("ws://"+urls+"/deployment/echo_logs/");
+
+    socket.onopen = function (event) {
+        console.log('连接到socket服务器');
+        socket.send('system_logs');
+    }
+    socket.onmessage = function (p1) {
+        console.log('返回数据',p1)
+        log_data = p1;
+        console.log('返回数据:',log_data);
+        $("#display_logfile").eq(0).find('ul').append("<li>"+log_data + "\t\n"+"</li>");
+
+    };
+    if(socket.readyState == WebSocket.OPEN)socket.onopen();
+    window.s = socket;
+    if(!window.s){alert("websocket未连接.");}
+    window.onbeforeunload = function () {
+        socket.send('quit');
+        closeWebSocket();
+    }
+}
+
+</script>
+{% endblock %}

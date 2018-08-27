@@ -12,8 +12,9 @@ def get_playbook():
 def get_logpath():
     log_path = os.environ.get("LOG_PATH")
     if not log_path or log_path is None:
+
         if os.path.isdir('/var/log/cloud_monitor/'):pass
         else:
             os.makedirs('/var/log/cloud_monitor/')
-        log_path = '/var/log/cloud_monitor/'
+        log_path = LOGS_INFO
     return log_path

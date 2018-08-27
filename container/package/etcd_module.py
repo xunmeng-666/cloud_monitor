@@ -22,7 +22,8 @@ class EtcdModel(object):
                 self.port = None
                 self.model = None
 
-    def connect(self):
+
+
         self.client = etcd.Client(host=self.host,port=self.port,protocol=self.model,read_timeout=5)
 
     def node_list(self):
@@ -35,6 +36,7 @@ class EtcdModel(object):
         return cluster_version
 
     def cluster_leader(self):
+        print 'etcd host:', self.host
         cluster_leader = self.client.leader
         return cluster_leader
 
@@ -59,7 +61,7 @@ class EtcdModel(object):
                 sk.connect((ip,port))
                 host_info.update({'status':'OK'})
                 sk.close()
-            except ConnectionRefusedError:
+            except Exception:
                 host_info.update({'status':'Error'})
         return host_list
 

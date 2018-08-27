@@ -26,3 +26,8 @@ urlpatterns = [
     url(r'^cluster/', include("container.urls")),
     url(r'^deployment/', include("Adeployment.urls")),
 ]
+
+from Adeployment import views
+urlpatterns += [
+    url(r'^system/logs/$',views.system_logs),
+]

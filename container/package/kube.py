@@ -11,6 +11,7 @@ from urllib3.exceptions import MaxRetryError
 
 
 class Kube(object):
+
     try:
         config.load_kube_config(config_file=os.path.expanduser(conf.K8S_CONFIG_FILE))
     except kubernetes.config.ConfigException:

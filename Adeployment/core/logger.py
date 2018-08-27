@@ -19,7 +19,7 @@ def now_dates():
 
 def logger(LOG_INFO,LOG_LEVEL,log_type='ADAdmin_Log'):
     # 写入log文件，保存log名称到DB
-    logs_name = "%s%s" %(get_logpath(),'access.log')
+    logs_name = get_logpath()
     logger = logging.getLogger(log_type)
     logger.setLevel(LOG_LEVEL)
     ch = logging.StreamHandler()

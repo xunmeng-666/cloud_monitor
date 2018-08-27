@@ -1,4 +1,7 @@
 {% extends 'bash/base-index.html' %}
+{% block head%}
+
+{% endblock %}
 {% block centent %}
 {% load deploy_tag %}
 
@@ -117,7 +120,7 @@
                     </div>
                     <div id="note-tab" class="tab-pane fade" >
                         <div class="row logs_display" id="display_log" style="display:block;height: 400px; overflow:scroll; border:1px solid;" >
-                            <ul class="scroll_bar" style="height:100%; margin: 0 0 10px 60px;"></ul>
+                            <ul class="scroll_bar " style="height:100%; margin: 0 0 10px 60px;"></ul>
                         </div>
                         <div class="row logs_display" style='width:200px; margin:0 50%;height: 1%' id='checkAll_log'></div>
                     </div>
@@ -130,9 +133,10 @@
 
                 </div>
                 <br>
-                <div id="alert-tab" class="tab-pane fade in active">
+                <div id="generalTabContent" class="tab-content table-responsive">
+                    <div id="alert-tab" class="tab-pane fade in active">
                     <form>
-                        <table class="table table-bordered ">
+                        <table class="table table-bordered">
                             <thead>
                                 <tr>
                                     <th class='text-center'>
@@ -169,6 +173,7 @@
                         </div>
                     </form>
                 </div>
+</div>
             </div>
         </div>
     </div>
