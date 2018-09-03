@@ -63,11 +63,10 @@
                 </div>
                 <div class="widget-content nopadding">
                     <div class="bs-example" id="horizontal-dl">
-    {#                    {% build_system_resource node_func %}#}
                         <dl class="dl-horizontal">
-                            <dt>主机类型</dt>
+                            <dt>主机地址</dt>
                             {% for host_type in node_func.status.addresses %}
-                                <dd>{{ host_type.type }}</dd>
+                                <dd>{{ host_type.address }}</dd>
                             {% endfor %}
                             <dt>最大内存</dt>
                             <dd>{{ node_func.status.capacity.memory }}</dd>

@@ -60,11 +60,11 @@
                         <dl class="dl-horizontal">
                             {% for images_info in pods_info.status.container_statuses %}
                             <dt style="text-align: left" class="icon icon-align-justify"> 镜像名称</dt>
-                            <dd>{{ images_info.image }}</dd>
+                            <dd style="margin-left: 200px">{{ images_info.image }}</dd>
                             <dt style="text-align: left" class="start_time icon icon-time">  启动时间</dt>
-                            <dd>{{ images_info.state.running.started_at }}</dd>
+                            <dd style="margin-left: 200px">{{ images_info.state.running.started_at }}</dd>
                             <dt style="text-align: left" class="startd_time icon icon-time">  创建时间</dt>
-                            <dd>{{ images_info.last_state.terminated.finished_at }}</dd>
+                            <dd style="margin-left: 200px">{{ images_info.last_state.terminated.finished_at }}</dd>
                             {% endfor %}
                         </dl>
                     </div>
@@ -80,9 +80,9 @@
                                 <strong>{{ info.name }}</strong>&thinsp;→&thinsp;
                                 <strong>{{ info.mount_path }}</strong>
                                 {% if info.read_only == None %}
-                                <small class="text-muted ng-binding">read-write</small>
+                                <small class="text-muted ng-binding" style="color: #a50000">read-write</small>
                                 {% else %}
-                                <small class="text-muted ng-binding">read-only</small>
+                                <small class="text-muted ng-binding" style="color: #00b700">read-only</small>
                                 {% endif %}
                             </li>
                             {% endfor %}

@@ -156,6 +156,13 @@ function all_del_set(self) {
     }
     if(idAll == ''){
         var td_id = $(this).closest('tr').find('th').eq(0).val();
+        var td_name = $(this).closest('tr').find('th').eq(1).val();
+        idAll = td_id + ',' ;
+        named = td_name + ',' ;
+    }
+    console.log('idall',idAll)
+    $.ajax({
+        url:"/deployment/settings/del_settings/?idAll=" + idAll +"&?named=" + named,
         idAll = td_id + ',' ;
     }
     console.log('idall',idAll)

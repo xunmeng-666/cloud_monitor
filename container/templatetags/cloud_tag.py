@@ -35,7 +35,7 @@ def build_node_info(node_info,nodes):
 def build_node_images(node_func):
     ele = ""
     print('node_func',node_func)
-    for name_list in node_func.status.container_statuses:
+    for name_list in node_func.status.images:
 
         ele += "<dd>%s</dd>" %name_list.names[1]
     return mark_safe(ele)
@@ -71,3 +71,6 @@ def build_volume_info(pods_info):
                         ele += "<dd>%s</dd>" %valume
 
     return mark_safe(ele)
+
+
+

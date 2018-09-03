@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^echo_logs/$', views.echo_logs),
     url(r'^settings/$', views.settings),
     url(r'^file_types/$', views.template),
+    url(r'^system/logs/$', views.system_logs),
     url(r'^settings/del_settings/$', views.del_settings,name='del_settings'),
 
 ]

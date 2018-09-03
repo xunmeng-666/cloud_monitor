@@ -17,6 +17,7 @@ RABBITMQ_PORT = 5672
 
 TEST_ADMIN_KEY = "My Secret"
 TEST_SERVER = "http://10.10.25.80:8080"
+K8S_CONFIG_FILE = "/Users/xunmeng/.kube/.kube/config"
 K8S_CONFIG_FILE = "/root/.kube/config"
 ETCD_HOST = "10.211.55.9"
 ETCD_PORT = 2379

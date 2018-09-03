@@ -52,9 +52,9 @@ class Save_to_DB(object):
                                    )
         return True
 
-    def save_logs_to_db(self):
-        log_func = self.admin_class.get('deploylist')
-        log_func.model(name=log_name).save()
+    def save_logs_to_db(self,name):
+        log_func = self.admin_class.get('logs')
+        log_func.model(name=name).save()
         return True
 
     def read_db(self):
@@ -73,6 +73,9 @@ class Get_DB(Save_to_DB):
         admin_class = self.admin_class.get('settings')
         return admin_class
 
+    def get_field(self,admin_class, id):
+        name = admin_class.model.objects.values('id', 'name').filter(id=id)
+        return name[0]['name'].decode('utf-8')
 
 save_db = Save_to_DB()
 get_db = Get_DB()

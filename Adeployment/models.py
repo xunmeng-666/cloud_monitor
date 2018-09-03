@@ -30,24 +30,25 @@ class FileType(models.Model):
     name = models.CharField(max_length=128,unique=True)
 
     class Meta:
-        verbose_name = "文件类型"
-        verbose_name_plural = "文件类型"
+        verbose_name = "模板类型"
+        verbose_name_plural = "模板类型"
 
     def __str__(self):
         return self.name
 
-class LogsField(models.Model):
-    name = models.CharField(max_length=128,unique=True)
-
+class Logs(models.Model):
+    name = models.CharField(max_length=128)
+    date = models.DateTimeField(auto_now_add=True)
     class Meta:
-        verbose_name = "日志字段"
-        verbose_name_plural = "日志字段"
+        verbose_name = "系统日志"
+        verbose_name_plural = "系统日志"
 
     def __str__(self):
         return "%s" %self.name
 
 class DeployList(models.Model):
     name = models.CharField(max_length=128)
+
     class Meta:
         verbose_name = '部署日志'
         verbose_name_plural = '部署日志'

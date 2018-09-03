@@ -37,7 +37,7 @@ class FiletypeInfoAdmin(BaseAdmin):
     list_filter = ["模板类型"]
     search_fields = ('name')
 
-class LogsFieldAdmin(BaseAdmin):
+class LogsAdmin(BaseAdmin):
     list_display = ("name")
     list_filter = ["字段名"]
 
@@ -51,7 +51,7 @@ site.register(models.Version,VersionInfoAdmin)
 site.register(models.Files,FilesInfoAdmin)
 site.register(models.FileType,FiletypeInfoAdmin)
 site.register(models.DeployList,DeplayLogsInfoAdmin)
-site.register(models.LogsField,LogsFieldAdmin)
+site.register(models.Logs,LogsAdmin)
 site.register(models.Settings,SettingsAdmin)
 
 

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="17ff80c8-13d3-435a-bb61-ba23e60bd6f6" name="node2" url="http://10.211.55.13">
+        <fileTransfer host="10.211.55.13" port="22" privateKey="$USER_HOME$/.ssh/id_rsa" rootFolder="/usr/local/cloud_monitor/" accessType="SFTP" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

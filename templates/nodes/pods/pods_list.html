@@ -65,7 +65,7 @@ function get_pod_info() {
                 for (info in pod_data) {
                     console.log('data',info.status);
                     ele_td = "<td onclick='pods_info(this)' style='cursor: pointer;'> \<" +
-                        "a href=/pods/"+pod_data[info].namespace +"/?pod_name="+pod_data[info].name+">"+ pod_data[info].name+ "</td>";
+                        "a href=/cluster/pods/"+pod_data[info].namespace +"/?pod_name="+pod_data[info].name+">"+ pod_data[info].name+ "</td>";
                     if (pod_data[info].status == 'Running') {
                         ele_td += "<td style='color: #18EC16'>" + pod_data[info].status + "</td>";
                     }

@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from Adeployment.admin import site
 from Adeployment import forms
 from Adeployment.core.model_ansible import build_file
-from Adeployment.core.model_func import save_file,delete_file
+from Adeployment.core.model_func import save_file,delete_file,save_db,get_db
 from Adeployment.core.rabbitmqs import Rabbit_Consumer
 from Adeployment.core.logger import logger
 from Adeployment.conf.conf import LOGS_INFO
@@ -90,6 +90,7 @@ def get_orderby_objs(request,querysets):
 @login_required
 def deploy(request,no_render=False):
     logger(request,logging.INFO)
+    save_db.save_logs_to_db("User:%s Access deploy page" % request.user)
     page_name = "DeployMent"
     admin_class = admin_func().get('files')
     deployfunc = admin_func().get('deploylist').model.objects.values('id', 'name')
@@ -134,6 +135,7 @@ def deploy_del(request):
             file_name = "%s%s-%s" % (filefunc['file_path'], filefunc['file_name'], filefunc['create_date'].strftime("%Y-%m-%d_%H:%M:%S"))
             delete_file(file_name)
             obj.delete()
+            save_db.save_logs_to_db("User:%s Delete file:%s success" %(request.user,file_name))
             logger('用户删除文件:%s' %(file_name),logging.INFO)
         return redirect('/deployment/')
     elif request.method == 'POST':
@@ -144,6 +146,7 @@ def deploy_del(request):
                 file_name = "%s%s-%s" % (filefunc['file_path'],
                                          filefunc['file_name'], filefunc['create_date'].strftime("%Y-%m-%d_%H:%M:%S"))
                 delete_file(file_name)
+                save_db.save_logs_to_db("User:%s Delete file:%s" % (request.user, file_name))
                 obj.delete()
             return HttpResponse(json.dumps({"status": 'true'}))
         except ValueError:
@@ -163,6 +166,7 @@ def deploy_delfile(request):
 
             delete_file(file_name)
             obj.delete()
+            save_db.save_logs_to_db("User:%s Delete file:%s" % (request.user, file_name))
             logger('用户删除文件:%s' % (file_name), logging.INFO)
         return redirect('/deployment/')
     elif request.method == 'POST':
@@ -173,6 +177,7 @@ def deploy_delfile(request):
                 file_name = "%s" % (filefunc['name'])
                 delete_file(file_name)
                 obj.delete()
+                save_db.save_logs_to_db("User:%s Delete file:%s" % (request.user, file_name))
             return HttpResponse(json.dumps({"status": 'true'}))
         except ValueError:
             pass
@@ -183,16 +188,18 @@ def deploy_delfile(request):
 @csrf_exempt
 def deploy_file(request):
     logger('%s' % (request), logging.INFO)
+    save_db.save_logs_to_db("User:%s Access deploy file" % (request.user))
     ret = {'status': 'true', 'error': 'false'}
     if request.method == 'POST':
         admin_class = admin_func().get('files')
         inven_id = request.GET.get('inventory_id').split('=')[0]
         playb_id = request.GET.get('playbook_id').split('=')[0]
-        t = threading.Thread(build_file(inven_id,playb_id,admin_class))
+        t = threading.Thread(build_file(request,inven_id,playb_id,admin_class))
         t.start()
         t.join(10)
         ret.update({'status': 'false','error': 'true'})
         return HttpResponse(json.dumps(ret))
+    save_db.save_logs_to_db("User:%s Use get request faild" % (request.user))
     return HttpResponse(status=404)
 
 
@@ -208,7 +215,9 @@ def upload(request):
         logger('用户上传文件类型:%s' %filetype, logging.INFO)
         if save_file(filename=filename,filetype=filetype):
             logger('保存成功', logging.INFO)
+            save_db.save_logs_to_db("User:%s Upload file:%s success" % (request.user, filename))
             return HttpResponse(json.dumps(ret))
+        save_db.save_logs_to_db("User:%s Upload file:%s faild,Reason use GET request" % (request.user, filename))
         logger('保存失败', logging.INFO)
         ret.update({'status':'false','error': 'true'})
         return HttpResponse(json.dumps(ret))
@@ -216,6 +225,7 @@ def upload(request):
 @login_required
 @csrf_exempt
 def template(request,no_render=False):
+    save_db.save_logs_to_db("User:%s Access template page" % (request.user))
     logger(request, logging.INFO)
     admin_class = admin_func().get('filetype')
     model_name = admin_class.model._meta.verbose_name
@@ -225,8 +235,8 @@ def template(request,no_render=False):
         logger('用户增加文件类型:%s' %form_obj, logging.INFO)
         if form_obj.is_valid():
             logger('保存成功', logging.INFO)
+            save_db.save_logs_to_db("User:%s Add new templay_type:%s success" % (request.user, request.POST.get('name')))
             form_obj.save()
-            # return {'status':'success'}
             return redirect('/deployment/file_types/' ,locals())
     else:
         form_obj = form()
@@ -259,12 +269,16 @@ def template_del(request):
             admin_class = admin_func().get('filetype')
             for get_id in request.GET.get('idAll').split(','):
                 obj = admin_class.model.objects.get(id=get_id)
+                name = get_db.get_field(admin_class=admin_class,id=get_id)
                 obj.delete()
+                save_db.save_logs_to_db("User:%s Delete template_type:%s success" % (request.user, name))
                 logger('删除成功', logging.INFO)
             return HttpResponse(json.dumps(ret))
     except ValueError:
         pass
     return HttpResponse(json.dumps(ret))
+
+
 
 @login_required
 @csrf_exempt
@@ -273,8 +287,10 @@ def template_delete(request):
     admin_class = admin_func().get('filetype')
     for get_id in request.GET.get('idAll').split(','):
         obj = admin_class.model.objects.get(id=get_id)
+        name = get_db.get_field(admin_class=admin_class, id=get_id)
         obj.delete()
         logger('删除成功', logging.INFO)
+        save_db.save_logs_to_db("User:%s Delete template_type:%s success" % (request.user, name))
     return redirect('/deployment/file_types/')
 
 @login_required
@@ -304,26 +320,49 @@ def echo_logs(request):
         request.websocket.close()
     elif msg == "system_logs":
         file = subprocess.call(['tail','-f', LOGS_INFO],shell=False)
-        print 'send_file',file
         request.websocket.send(file)
     else:
         run_mq = Rabbit_Consumer()
         run_mq.rabbit_consumer(request)
-
+        
+@csrf_exempt
+@login_required
+def system_logs(request):
+    from datetime import datetime
+    from datetime import timedelta,date
+    if request.method == 'POST':
+        date = request.GET.get('date')
+        if date == 'one_data':funcDate = 1
+        elif date == "seven_data":funcDate = 7
+        elif date == "thirty_data":funcDate=30
+        else:funcDate=30000
+        sys_logs=[]
+        now_date = datetime.now().date()
+        end_date = now_date - timedelta(funcDate)
+        admin_class = admin_func().get('logs')
+        objs = admin_class.model.objects.values('name', 'date').filter(date__gt=end_date).order_by("-date")
+        for i in objs:
+            times =i["date"].strftime("%Y-%m-%d %H:%M:%S")
+            content = i['name']
+            sys_logs.append({'date':times,'name':content})
+        print 'type',sys_logs
+        return HttpResponse(json.dumps(sys_logs))
+    return render(request,'system/logs/system_logs.html',locals())
 
 @login_required
 def system_logs(request):
-
     return render(request,'system/logs/system_logs.html')
 
 @login_required
 def settings(request,no_render=None):
+    save_db.save_logs_to_db("User:%s access system config page" % (request.user))
     admin_class = admin_func().get('settings')
     form = forms.create_dynamic_modelform(admin_class.model)
     if request.method == "POST":
         form_obj = form(data=request.POST)
         if form_obj.is_valid():
             form_obj.save()
+            save_db.save_logs_to_db("User:%s Add new config:%s success" % (request.user, request.POST))
             return redirect('/deployment/settings/')
 
     elif request.method == "GET":
@@ -354,8 +393,10 @@ def del_settings(request):
         if request.method == 'POST':
             admin_class = admin_func().get('settings')
             for get_id in request.GET.get('idAll').split(','):
+                name = request.GET.get('named').split(',')
                 obj = admin_class.model.objects.get(id=get_id)
                 obj.delete()
+                save_db.save_logs_to_db("User:%s Delete system config:%s" % (request.user,name))
                 logger('删除成功', logging.INFO)
             return HttpResponse(json.dumps(ret))
     except ValueError:

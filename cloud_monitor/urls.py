@@ -19,7 +19,7 @@ from container import views
 
 
 urlpatterns = [
-    # url(r'^admin/', admin.site.urls),
+    url(r'^admin/', admin.site.urls),
     url(r'^$',views.index),
     url(r'^accounts/login/$',views.account_login),
     url(r'^accounts/logout/$',views.account_logout),
