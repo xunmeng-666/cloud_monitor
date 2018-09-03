@@ -11,7 +11,9 @@ from urllib3.exceptions import MaxRetryError
 
 
 class Kube(object):
+
     '''connection to K8S server and get all info for K8S cluster'''
+
     try:
         config.load_kube_config(config_file=os.path.expanduser(conf.K8S_CONFIG_FILE))
     except kubernetes.config.ConfigException:
@@ -88,7 +90,4 @@ try:
 except MaxRetryError :
     pass
 
-aa = Kube()
-# bb = aa.get_list_cluster_role()
-# print dir(bb)
-# print bb
+

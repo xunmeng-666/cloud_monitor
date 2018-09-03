@@ -318,11 +318,13 @@ def echo_logs(request):
             request.websocket.send(content.encode('utf-8'))
         file.close()
         request.websocket.close()
-
+    elif msg == "system_logs":
+        file = subprocess.call(['tail','-f', LOGS_INFO],shell=False)
+        request.websocket.send(file)
     else:
         run_mq = Rabbit_Consumer()
         run_mq.rabbit_consumer(request)
-
+        
 @csrf_exempt
 @login_required
 def system_logs(request):
@@ -346,6 +348,10 @@ def system_logs(request):
         print 'type',sys_logs
         return HttpResponse(json.dumps(sys_logs))
     return render(request,'system/logs/system_logs.html',locals())
+
+@login_required
+def system_logs(request):
+    return render(request,'system/logs/system_logs.html')
 
 @login_required
 def settings(request,no_render=None):

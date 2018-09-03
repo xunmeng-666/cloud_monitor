@@ -163,6 +163,11 @@ function all_del_set(self) {
     console.log('idall',idAll)
     $.ajax({
         url:"/deployment/settings/del_settings/?idAll=" + idAll +"&?named=" + named,
+        idAll = td_id + ',' ;
+    }
+    console.log('idall',idAll)
+    $.ajax({
+        url:"/deployment/settings/del_settings/?idAll=" + idAll,
         type: 'post',
         success:function (data) {
             alert('删除成功');
