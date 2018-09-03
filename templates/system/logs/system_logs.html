@@ -1,0 +1,76 @@
+{% extends 'bash/base-index.html' %}
+{% block centent %}
+<div id="content-header">
+    <div id="breadcrumb"> <a href="index.html" class="tip-bottom" data-original-title="Go to Home">
+        <i class="icon-home"></i> Home ></a>
+        <a href="/system/logs/" class="tip-bottom" data-original-title="">system_logs</a>
+        <h1>系统日志</h1>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span12" style="width: 90%">
+            <div class="span1">
+                <div class="col-lg-1">
+                    <select id="historical_data">
+                        <option value="none" label="选择日期"></option>
+                        <option href="/system/logs/?one_data" value="one_data" label="今天日志"></option>
+                        <option href="/system/logs/?seven_data" value="seven_data" label="7天日志"></option>
+                        <option href="/system/logs/?thirty_data" value="thirty_data" label="30天日志"></option>
+                        <option value="all_data" label="全部日志"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="widget-box">
+                <div class="row logs_display" id="display_log" style="display:block;height: 400px; overflow:scroll; border:1px solid; margin-left: 0px" >
+                    <table class="table table-bordered ">
+                        <thead>
+                            <tr>
+                                <th style="width: 180px">日期</th>
+                                <th>内容</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody" class="tab-content responsive">
+
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#historical_data").change(function () {
+        getTimeSolt();
+    })
+    function getTimeSolt() {
+        var get_time = document.getElementById('historical_data').value;
+        if(get_time != 'none') {
+            $.ajax({
+                url:"/deployment/system/logs/?date="+get_time,
+                type:'post',
+                success:function (logs) {
+                    log_data = JSON.parse(logs)
+{#                    console.log('logs',log_data)#}
+{#                    console.log('logs',log_data.length)#}
+
+                    _insert(log_data)
+                }
+            })
+        }
+    }
+    function _insert(log_data) {
+        for(var i = 0; i < log_data.length;i++){
+            console.log(log_data[i].date)
+            time = log_data[i].date;
+            content = log_data[i].name;
+            ele = "<tr>";
+            ele += "<td>"+time+"</td>";
+            ele += "<td>" + content + "</td></tr>";
+            $("#tbody").append(ele)
+        }
+    }
+</script>
+{% endblock %}

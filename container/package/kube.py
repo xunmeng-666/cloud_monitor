@@ -11,6 +11,7 @@ from urllib3.exceptions import MaxRetryError
 
 
 class Kube(object):
+    '''connection to K8S server and get all info for K8S cluster'''
     try:
         config.load_kube_config(config_file=os.path.expanduser(conf.K8S_CONFIG_FILE))
     except kubernetes.config.ConfigException:
@@ -19,6 +20,7 @@ class Kube(object):
         pass
 
     def get_node(self):
+        '''Get node list and return a dict'''
         node_func = client.CoreV1Api().list_node()
         return node_func
 
@@ -42,15 +44,22 @@ class Kube(object):
         pods_info = client.CoreV1Api().read_namespaced_pod_status(namespace=namespace,name=name)
         return pods_info
 
+    # def get_list_cluster_role(self):
+    #     role_list = client.RbacAuthorizationV1Api().list_cluster_role()
+    #     return role_list
+
 class KubenetesFunc(Kube):
+    ''' 获取内容解析并找到指定内容  Gets content resolution and finds the specified content. '''
     def all_pod_for_namespace(self):
         pod_info = self.get_list_pod_all_namespaces()
         pod_func = self.pod_func(pod_info)
         return pod_func
+
     def pod_for_namespace(self,namespace):
         pod_info = self.get_list_namespaced_pod(namespace=namespace)
         pod_func = self.pod_func(pod_info)
         return pod_func
+
     def pod_func(self,pod_info):
         info_dict = {}
         for index, info in enumerate(pod_info.items):
@@ -65,11 +74,21 @@ class KubenetesFunc(Kube):
 
     def pod_info(self,name,namespace):
         pods_info = self.get_pod_info(name=name,namespace=namespace)
-
         return pods_info
+
+    # def list_cluster_role(self):
+    #     role = self.get_list_cluster_role()
+    #     print 'userinfo:%s' %role
+
+
 try:
     kube = Kube()
     kube_func = KubenetesFunc()
     test = Kube().get_node()
 except MaxRetryError :
     pass
+
+aa = Kube()
+# bb = aa.get_list_cluster_role()
+# print dir(bb)
+# print bb

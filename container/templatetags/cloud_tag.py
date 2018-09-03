@@ -7,7 +7,7 @@ register = Library()
 
 @register.simple_tag
 def build_node_info(node_info,nodes):
-    rle_th = "<th ><a href='/nodes/node_info/{node}/'>{name}</a></th>".format(node=node_info.metadata.name,name=node_info.metadata.name)
+    rle_th = "<th ><a href='/cluster/nodes/node_info/{node}/'>{name}</a></th>".format(node=node_info.metadata.name,name=node_info.metadata.name)
     if "node-role.kubernetes.io/master" in node_info.metadata.labels:
         rle_th += "<th >Master</th>"
     elif "node-role.kubernetes.io/compute" in node_info.metadata.labels:
@@ -17,9 +17,13 @@ def build_node_info(node_info,nodes):
 
     for status in node_info.status.conditions:
         if status.type == 'Ready' and status.status == 'True':
-            rle_th += "<th style='color: #FF0512;'>Ready</th>"
+            rle_th += "<th style='color: #34A637;'>Ready</th>"
         elif status.type == 'Ready' and status.status == 'Unknown':
-            rle_th += "<th>NotReady</th>"
+            rle_th += "<th style='color: #FF0512;'>NotReady</th>"
+
+    for ip_add in node_info.status.addresses:
+        if ip_add.type == "InternalIP":
+            rle_th += "<th>%s</th>" %ip_add.address
     rle_th += "<th>%s</th>" %node_info.status.allocatable.get('cpu')
     rle_th += "<th>%s</th>" %node_info.status.capacity.get('cpu')
     rle_th += "<th>%sGi</th>" %(round(int(node_info.status.allocatable.get('memory').split('K')[0]) / 1024 /1024 ,2))
@@ -31,7 +35,7 @@ def build_node_info(node_info,nodes):
 def build_node_images(node_func):
     ele = ""
     print('node_func',node_func)
-    for name_list in node_func.status.container_statuses:
+    for name_list in node_func.status.images:
 
         ele += "<dd>%s</dd>" %name_list.names[1]
     return mark_safe(ele)
@@ -67,3 +71,6 @@ def build_volume_info(pods_info):
                         ele += "<dd>%s</dd>" %valume
 
     return mark_safe(ele)
+
+
+

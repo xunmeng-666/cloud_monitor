@@ -162,10 +162,14 @@ def run_ansi(playbook,inventory):
     task = AnsibleTask(hosts_list=inventory)
     task.exec_playbook([playbook])
 
-def build_file(inven_func,playb_func,admin_class):
+def build_file(request,inven_func,playb_func,admin_class):
     inventoryfile = join_host_file(inven_func,admin_class)
-    playbook_env = join_playbook_file(playb_func,admin_class)
-    run_ansi(playbook=playbook_env,inventory=inventoryfile)
+    playbookfile = join_playbook_file(playb_func,admin_class)
+    save_db.save_logs_to_db("User:%s Get inventoryfile:%s" % (request.user, inventoryfile))
+    save_db.save_logs_to_db("User:%s Get playbookfile:%s" % (request.user, playbookfile))
+    run_ansi(playbook=playbookfile,inventory=inventoryfile)
+    save_db.save_logs_to_db("User:%s Run ansible script" % (request.user))
+
 
 
 def join_playbook_file(playb_func,admin_class):

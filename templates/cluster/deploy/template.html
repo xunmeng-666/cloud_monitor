@@ -1,4 +1,4 @@
-{% extends 'bash/base-index.html' %}
+ {% extends 'bash/base-index.html' %}
 {% block centent %}
 {% load deploy_tag %}
 
@@ -61,7 +61,7 @@
                                                 <form method='POST'>
                                                     {% csrf_token %}
                                                     <td class="text-center" style="text-align: center">
-                                                        <a href="/deployment/type_del/?idAll={{ row.id }}" class="btn btn-mini btn-danger asset_del"  >删除</a>
+                                                        <a href="/deployment/type_del/?idAll={{ row.id }}&?named={{ row.name }}" class="btn btn-mini btn-danger asset_del"  >删除</a>
                                                     </td>
                                                 </form>
                                             </tr>
@@ -208,10 +208,10 @@ function all_del_file(self) {
         }
     }
     if(idAll == ''){
-        var td_id = $(this).closest('tr').find('th').eq(1).text();
+        var td_id = $(this).closest('tr').find('td').eq(1).text();
         idAll = td_id + ',' ;
+
     }
-    console.log('idall',idAll)
     $.ajax({
         url:"/deployment/types_del/?idAll=" + idAll,
         type: 'post',
@@ -270,6 +270,7 @@ function checkAll(self) {
 
 function deploy_file(self) {
     var check = document.getElementsByName("_selected_obj");
+
     var len = check.length;
     var idAll = '';
     var count = 0;
@@ -278,6 +279,7 @@ function deploy_file(self) {
     var files_type = [];
     for(var i = 0; i<len;i++){
         if(check[i].checked){
+
             idAll += check[i].value+',';
             count += 1;
             file_type = check[i].parentNode.parentNode.children[3].innerHTML;
