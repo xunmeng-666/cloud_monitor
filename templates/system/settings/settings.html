@@ -42,7 +42,6 @@
                                             {% endif %}
                                             </th>
                                             {% endfor %}
-                                            <th class='text-center' >操作</th>
                                         {% endif %}
                                     </tr>
                                 </thead>
@@ -58,13 +57,7 @@
                                                 <td style="text-align: center">{{ row.ipaddress }}</td>
                                                 <td style="text-align: center">{{ row.ports }}</td>
                                                 <td style="text-align: center">{{ row.get_model_display }}</td>
-
-                                                <form method='POST'>
-                                                    {% csrf_token %}
-                                                    <td class="text-center" style="text-align: center">
-                                                        <a href="/deployment/del/?idAll={{ row.id }}" class="btn btn-mini btn-danger asset_del"  >删除</a>
-                                                    </td>
-                                                </form>
+{#                                                <td style="text-align: center">{{ row.ca_ert }}</td>#}
                                             </tr>
                                         </div>
                                     </div>{% endfor %}
@@ -117,7 +110,8 @@
                 <div class="modal-body" >
                      <form class="form-horizontal" method="post">{% csrf_token %}
                     {% for field in form_obj %}
-                        <div class="form-group ">
+
+                        <div class="form-group" id="{{ field.name }}">
                             <label class=" span1" style="vertical-align: middle;font-size: 12px">{{ field.label }}：</label>
                             {% if field.name == 'ipaddress' %}
                                 <input type="test" name="{{ field.name }}" onclick="ipaddress(this)" style=" vertical-align:middle;line-height: 20px;">
@@ -156,21 +150,20 @@ function all_del_set(self) {
     }
     if(idAll == ''){
         var td_id = $(this).closest('tr').find('th').eq(0).val();
-        var td_name = $(this).closest('tr').find('th').eq(1).val();
-        idAll = td_id + ',' ;
-        named = td_name + ',' ;
-    }
-    console.log('idall',idAll)
-    $.ajax({
-        url:"/deployment/settings/del_settings/?idAll=" + idAll +"&?named=" + named,
         idAll = td_id + ',' ;
     }
     console.log('idall',idAll)
     $.ajax({
-        url:"/deployment/settings/del_settings/?idAll=" + idAll,
+        url:"/deployment/settings/del_settings/?idAll=" + idAll ,
         type: 'post',
         success:function (data) {
-            alert('删除成功');
+            var status = JSON.parse(data)
+            if (status.status == 'true'){
+                alert('删除成功');
+            }
+            else {
+                alert('删除失败');
+            }
             location.reload(true)
         }
     })
@@ -208,6 +201,24 @@ function FuzzySearch(self) {
     })
 
 }
+
+
+
+
+
+$(function () {
+    ca = document.getElementById('ca_ert');
+    ca.style.display='none';
+    $("#id_model").change(function () {
+        if(this.value == '1'){
+            ca.style.display='';
+        }
+        else {
+            ca.style.display='none';
+        }
+    })
+})
+
 
 </script>
 {% endblock %}

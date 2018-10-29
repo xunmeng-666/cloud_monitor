@@ -1,3 +1,5 @@
+# -*- coding:utf-8-*-
+
 from django.shortcuts import render,redirect,HttpResponse
 from container.package.logger import logger
 from container.package.etcd_module import etcds
@@ -26,8 +28,39 @@ def account_login(request):
 def account_logout(request,**kwargs):
     request.session.clear()
     logout(request)
-
     return redirect('/')
+
+@csrf_exempt
+@login_required
+def change_password_obj(request):
+    if request.method == 'GET':
+        return redirect("/")
+    elif request.method == "POST":
+        user = request.user
+        pwd = request.POST.get('pwd')
+        new_pwd = request.POST.get("new_pwd")
+        re_pwd = request.POST.get("re_pwd")
+
+        obj = authenticate(username=user,password=pwd)
+        # obj = models.UserInfo.objects.filter(username=user, password=pwd).first()
+        ret = {'status': True, 'error': None}
+
+        if obj:
+            if new_pwd == re_pwd:
+                obj.set_password(new_pwd)
+                obj.save()
+                return HttpResponse(json.dumps(ret))
+            else:
+                ret['status'] = False
+                ret['error'] = "新密码不一致"
+                return HttpResponse(json.dumps(ret))
+        else:
+            ret['status'] = False
+            ret['error'] = "原密码错误"
+            # 登陆失败，页面显示错误信息
+            return HttpResponse(json.dumps(ret))
+    return redirect('/')
+
 
 @login_required
 def index(request):
@@ -50,13 +83,8 @@ def node_info(request,node_name,*args):
 @login_required
 @csrf_exempt
 def pod(request):
-    if request.method == 'GET':
-        save_db.save_logs_to_db("User:%s Get pod list" % request.user)
-        pods_list = kube.get_list_pod_all_namespaces
-        return render(request,'nodes/pods/pods_list.html',locals())
-
-    elif request.method == 'POST':
-        namespace = request.GET.get('project')
+    namespace = request.GET.get('project')
+    if namespace:
         if namespace == 'all_data':
             save_db.save_logs_to_db("User:%s Get all namespaces" % request.user)
             pod_list = kube_func.all_pod_for_namespace()
@@ -64,6 +92,12 @@ def pod(request):
             save_db.save_logs_to_db("User:%s Get namespaces:%s info" %(request.user,namespace))
             pod_list = kube_func.pod_for_namespace(namespace=namespace)
         return HttpResponse(json.dumps(pod_list))
+    else:
+        save_db.save_logs_to_db("User:%s Get pod list" % request.user)
+        pods_list = kube_func.get_list_namespace()
+        namespace_list = [name.metadata.name for name in pods_list.items]
+        return render(request,'nodes/pods/pods_list.html',locals())
+
 
 @login_required
 def etcd_list(request):
@@ -100,14 +134,58 @@ def pod_namespace(request):
 
 @login_required
 def pod_info(request,namespace):
-
+    print('pod_info')
     logger.logger_info("get pod info",LOG_LEVEL=logging.INFO,log_type='pod_info')
     name = request.GET.get('pod_name')
     pods_info = kube_func.pod_info(name=name,namespace=namespace)
     save_db.save_logs_to_db("User:%s Get pod:%s info on namespaces:%s " %(request.user,name,namespace))
     return render(request,'nodes/pods/pods_info.html',locals())
 
+@csrf_exempt
+@login_required
+def namespace(request):
+    logger.logger_info('user:%s access namespaces list' % request.user, LOG_LEVEL=logging.INFO, log_type="namespace")
+    if request.method == 'POST':
+        name = request.GET.get('project')
+        if name == 'all_project':
+            namespace_info = kube_func.all_namespace_pod_role()
+        else:
+            namespace_info = kube_func.namespace_pod_role(namespace=name)
+        return HttpResponse(json.dumps(namespace_info))
+    elif request.method == 'GET':
+        return render(request,'nodes/namespace/namespace_list.html',locals())
 
-def master_cluster(request):
-    pass
+@login_required
+def namespace_info(request):
+    namespace = request.GET.get('project').split('=')[0]
+    ns_info = kube_func.get_namespace_role_binding(namespace=namespace)
+    return render(request,'nodes/namespace/namespace_info.html',locals())
+
+@login_required
+def namespace_role_info(request):
+    logger.logger_info("user:%s access namespace role info" %request.user,LOG_LEVEL=logging.INFO,log_type='namespace')
+    role = request.GET.get('role').split('=')[0]
+
+
+
+
+@login_required
+def access_roles(request):
+    userList = request.GET.get('roles')
+    if userList:
+        if userList == 'all_user':
+            userFunc = kube_func.get_role_auth()
+        else:
+            userFunc = kube_func.get_a_role_on_project(userList)
+        return HttpResponse(json.dumps(userFunc))
+    else:
+        userFunc = kube_func.get_all_user_list()
+        return render(request,'nodes/roles/roles_list.html',locals())
+
+@login_required
+def role_info(request):
+    role = request.GET.get('role')
+    objects = kube_func.get_a_role_on_project(role)
+    userInfo = kube_func.get_a_user_info(role)
+    return render(request,'nodes/roles/roles_info.html',locals())
 

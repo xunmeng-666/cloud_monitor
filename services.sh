@@ -9,18 +9,15 @@ start() {
             echo "Sorry, AutoAdmin must be run as root"
             exit 1
         fi
-
-        nohup python $autoadmin_dir/manage.py runserver 0.0.0.0:8000 & > /dev/null
+        nohup python3 $autoadmin_dir/manage.py runserver --insecure 0.0.0.0:8000 & > /dev/null
         if [ $? == 0 ];then
         	echo success "autoadmin_start"
-
-        nohup python $autoadmin_dir/manage.py runserver 0.0.0.0:8000 &> /dev/null
-        if [ $? == 0 ];then
             if [ ! -e $lockfile ]; then
                 lockfile_dir=`dirname $lockfile`
                 mkdir -pv $lockfile_dir
             fi
             touch "$lockfile"
+            echo
         else
             echo "$autoadmin_start"
 
@@ -34,7 +31,7 @@ stop() {
     ps aux | grep -E 'runserver' | grep -v grep | awk '{print $2}' | xargs kill -9 &> /dev/null
     ret=$?
     if [ $ret -eq 0 ]; then
-        echo_success
+        echo
         rm -f "$lockfile"
     else
         echo
@@ -48,6 +45,7 @@ status(){
     if [ $? == '0' ];then
         echo -n "cloud_monitor/autoadmin is running..."
         touch "$lockfile"
+        echo
     else
         echo -n "cloud_monitor/autoadmin is not running."
     fi

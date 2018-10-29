@@ -1,30 +1,27 @@
 # -*- coding:utf-8-*-
 
-import etcd
 import socket
-from Adeployment.conf import conf
+import etcd
 from Adeployment.core.model_func import get_db
+from Adeployment.core.environments import get_etcdinfo
+from conf import conf
+
 
 class EtcdModel(object):
     def __init__(self):
+        func = get_etcdinfo()
+        self.host = func['host']
+        self.port = func['port']
+        self.model = func['protocol']
+        self.cert = func['cert']
+        self.ca_cert = func['ca_cert']
+        self.client = etcd.Client(host=self.host,port=self.port,protocol=self.model,
+                                  ca_cert=self.ca_cert,cert=self.cert,read_timeout=5)
 
-        self.host = conf.ETCD_HOST
-        self.port = conf.ETCD_PORT
-        self.model = conf.ETCD_HTTP_MODEL
-        if not self.host or self.host is None:
-            try:
-                func = get_db.get_setting().model.objects.values('name','ipaddress','ports','model')
-                self.host = func[0]['ipaddress']
-                self.port = int(func[0]['ports'])
-                self.model = func.model.Choices[func[0]['model']][1]
-            except IndexError:
-                self.host = None
-                self.port = None
-                self.model = None
+        # self.client = etcd.Client(host='192.168.51.3', port=2379, protocol='https', ca_cert='/root/.kube/etcd/ca.crt',
+        #                      cert=('/root/.kube/etcd/peer.crt', '/root/.kube/etcd/peer.key'))
 
 
-
-        self.client = etcd.Client(host=self.host,port=self.port,protocol=self.model,read_timeout=5)
 
     def node_list(self):
         nodes_list = self.client.members
@@ -36,7 +33,7 @@ class EtcdModel(object):
         return cluster_version
 
     def cluster_leader(self):
-        print 'etcd host:', self.host
+
         cluster_leader = self.client.leader
         return cluster_leader
 

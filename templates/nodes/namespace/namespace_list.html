@@ -1,0 +1,138 @@
+{% extends 'bash/base-index.html' %}
+{% block centent %}
+{% load cloud_tag %}
+
+<div id="content-header">
+    <div id="breadcrumb" >
+        <a href="/" title="Go to Home" class="tip-bottom"><i class="icon-home"></i>Home</a>/
+        <a href="/cluster/namespace" title="Go to NameSpace" class="tip-bottom">NameSpace</a>
+        <div class="span12" style="margin-left: 0px">
+            <div class="span4" style="margin-left: 0px">
+                <div class="text-left">
+                    <select id="historical_data" >
+                        <option label="选择项目" value="selete_project"></option>
+                        <option label="全部项目" value="all_project"></option>
+                        {% build_project_name %}
+                    </select>
+                </div>
+            </div>
+            <div class="span8">
+                <div class="span12" style="margin-left: 500px" >
+                    <div class="control-group">
+                        <div class="controls" id="uniform-undefined">
+                            <label class="span">显示系统用户:</label>
+                            <div class="span">
+                                <label>
+                                <input title="显示系统用户" onclick="fill_date(this)" type="checkbox" name="radios" checked /> ON</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="span7">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-sm-12">
+    <div class="ibox float-e-margins" id="all">
+        <div class="quick-actions">
+            <h3>NameSpace Role</h3>
+        </div>
+    </div>
+</div>
+<form method="post" onsubmit="return FormVerification(this)">{% csrf_token %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th style="width: 300px">项目名称</th>
+                <th style="width: 300px">容器数量</th>
+                <th style="width: 300px">登录用户</th>
+                <th style="width: 300px">用户类型</th>
+                <th style="width: 300px">创建时间</th>
+            </tr>
+        </thead>
+        <tbody id="info_namespace">
+        </tbody>
+    </table>
+</form>
+
+
+
+
+
+<script>
+
+$(function () {
+    var namespaces = document.getElementById('historical_data').value;
+    if (namespaces == 'selete_project'){}
+    else {get_pod_info()}
+})
+
+$("#historical_data").change(function () {
+    get_pod_info();
+});
+
+var ele_list = [];
+function get_pod_info() {
+    var namespaces = document.getElementById('historical_data').value;
+    if (namespaces == 'selete_project'){}
+    else {
+        $.ajax({
+            url: '/cluster/namespace/?project=' + namespaces,
+            type: 'post',
+            success: function (data) {
+                var ns_info = JSON.parse(data);
+                ele_list = [];
+                for (var i in ns_info) {
+                    ele_list.push({'name':i,'pod_count':ns_info[i].pod_count,'user_name':ns_info[i].login_user.name,
+                    'kind':ns_info[i].login_user.kind,'create_date':ns_info[i].login_user.create_date})
+                }
+                fill_date();
+            }
+        })
+    }
+}
+
+function fill_date() {
+    var check_box = document.getElementsByName('radios')[0];
+    ele = "";
+
+    if (check_box.checked){
+        for(var i in ele_list){
+            ele_tr = "<tr >";
+            ele_td =  "<td>" + "<a href=/cluster/namespace-info/?project="+ ele_list[i].name+">"+ ele_list[i].name + "</a>" + "</td>";
+            ele_td += "<td>" +ele_list[i].pod_count+"</td>";
+            ele_td += "<td>" + "<a href=/cluster/roles/info/?role=" + ele_list[i].user_name+">"+ ele_list[i].user_name+"</a>" +"</td>";
+            ele_td += "<td>" + ele_list[i].kind +"</td>";
+            ele_td += "<td>" + ele_list[i].create_date +"</td>";
+            ele_tr += ele_td;
+            ele_tr += "</tr>";
+            ele += ele_tr;
+        }
+    }
+    else {
+        for(var i in ele_list){
+            console.log(ele_list[i].kind);
+            if(ele_list[i].kind == 'ServiceAccount'){}
+            else {
+                ele_tr = "<tr>";
+                ele_td =  "<td>" + "<a href=/cluster/namespace-info/?project="+ ele_list[i].name+">"+ ele_list[i].name + "</a>" + "</td>";
+                ele_td += "<td>" + ele_list[i].pod_count +"</td>";
+                ele_td += "<td>" + "<a href=/cluster/namespace-info/info/?role="+ ele_list[i].user_name+">"+ ele_list[i].user_name+"</a>" +"</td>";
+                ele_td += "<td>" + ele_list[i].kind +"</td>";
+                ele_td += "<td>" + ele_list[i].create_date +"</td>";
+                ele_tr += ele_td;
+                ele_tr += "</tr>";
+                ele += ele_tr;
+            }
+        }
+        console.log('ele',ele)
+    }
+    $("#info_namespace").html(ele);
+}
+
+
+</script>
+{% endblock %}

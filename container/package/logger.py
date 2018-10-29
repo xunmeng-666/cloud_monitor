@@ -3,7 +3,8 @@
 
 import logging
 from logging import handlers
-from Adeployment.conf.conf import *
+
+from conf.conf import *
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

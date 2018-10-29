@@ -2,11 +2,11 @@
 # -*- coding:utf-8 -*-
 
 import logging
-import os
 import time
 from logging import handlers
-from Adeployment.conf.conf import *
+
 from Adeployment.core.environments import get_logpath
+from conf.conf import *
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

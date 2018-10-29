@@ -14,11 +14,16 @@ FILE_PATH = "/etc/ansible/roles/"
 #RabbitMQ配置
 RABBITMQ_HOST = "localhost"
 RABBITMQ_PORT = 5672
+RABBITMQ_USER = None
+RABBITMQ_PASSWORD = None
 
 TEST_ADMIN_KEY = "My Secret"
-TEST_SERVER = "http://10.10.25.80:8080"
-K8S_CONFIG_FILE = "/Users/xunmeng/.kube/.kube/config"
+TEST_SERVER = ""
+# K8S_CONFIG_FILE = "/Users/xunmeng/.kube/.kube/config"
 K8S_CONFIG_FILE = "/root/.kube/config"
-ETCD_HOST = "10.211.55.9"
+ETCD_HOST = "192.168.51.3"
 ETCD_PORT = 2379
-ETCD_HTTP_MODEL = "https"
+ETCD_HTTP_MODEL = "https" #如果启用HTTPS，必须配置证书文件
+#配置ETCD_PEER_CERT_FILE和ETCD_PEER_KEY_FILE文件,证书文件必须是绝对路径
+ETCD_CA_CRET_FILE = "/root/.kube/etcd/ca.crt"
+ETCD_CERT_FILE = ("/root/.kube/etcd/peer.crt","/root/.kube/etcd/peer.key")

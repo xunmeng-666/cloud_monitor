@@ -34,13 +34,7 @@
 
                         </tbody>
                     </table>
-            <div class="widget-box">
-                <div id="generalTabContent" class="tab-content responsive">
-                    <div id="note-tab" class="tab-pane fade" >
-                        <div class="row logs_display" id="display_log" style="display:block;height: 400px; overflow:scroll; border:1px solid;" >
-                            <ul class="scroll_bar" style="height:100%; margin: 0 0 10px 60px;"></ul>
-                        </div>
-                    </div>
+
                 </div>
             </div>
         </div>
@@ -48,7 +42,6 @@
 </div>
 
 <script>
-
     $("#historical_data").change(function () {
         getTimeSolt();
     })
@@ -60,6 +53,9 @@
                 type:'post',
                 success:function (logs) {
                     log_data = JSON.parse(logs)
+{#                    console.log('logs',log_data)#}
+{#                    console.log('logs',log_data.length)#}
+
                     _insert(log_data)
                 }
             })
@@ -76,31 +72,5 @@
             $("#tbody").append(ele)
         }
     }
-
-window.onload = function () {
-    console.log('开始websocket')
-    var urls = window.location.host;
-    var socket = new WebSocket("ws://"+urls+"/deployment/echo_logs/");
-
-    socket.onopen = function (event) {
-        console.log('连接到socket服务器');
-        socket.send('system_logs');
-    }
-    socket.onmessage = function (p1) {
-        console.log('返回数据',p1)
-        log_data = p1;
-        console.log('返回数据:',log_data);
-        $("#display_logfile").eq(0).find('ul').append("<li>"+log_data + "\t\n"+"</li>");
-
-    };
-    if(socket.readyState == WebSocket.OPEN)socket.onopen();
-    window.s = socket;
-    if(!window.s){alert("websocket未连接.");}
-    window.onbeforeunload = function () {
-        socket.send('quit');
-        closeWebSocket();
-    }
-}
-
 </script>
 {% endblock %}

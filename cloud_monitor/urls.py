@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^$',views.index),
     url(r'^accounts/login/$',views.account_login),
     url(r'^accounts/logout/$',views.account_logout),
+    url(r'^change_password/', views.change_password_obj),
     url(r'^cluster/', include("container.urls")),
     url(r'^deployment/', include("Adeployment.urls")),
 ]

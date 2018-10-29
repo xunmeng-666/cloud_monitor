@@ -9,7 +9,7 @@ urlpatterns = [
     url(r'^upload/$', views.upload),
     url(r'^del/$', views.deploy_del),
     url(r'^del_logfile/$', views.deploy_delfile),
-    url(r'^file/$', views.deploy_file),
+    # url(r'^file/$', views.deploy_file),
     url(r'^type_del/$', views.template_delete),
     url(r'^types_del/$', views.template_del),
     url(r'^echo_logs/$', views.echo_logs),

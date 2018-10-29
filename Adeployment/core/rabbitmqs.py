@@ -1,27 +1,37 @@
 # -*- coding:utf-8-*-
 
-import pika
 import time
-from Adeployment.conf.conf import *
+import pika
 from Adeployment.core.model_func import get_db
+from Adeployment.core.environments import get_rabbitmq
+
+
+_rabbit = get_rabbitmq()
+host = _rabbit['host']
+port = _rabbit['port']
+username = None
+password = None
 
 def rabbit_producer(info):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, port=RABBITMQ_PORT))
+    '''RabbitMQ生产者'''
+    if _rabbit['username'] and _rabbit['password']:
+        username = _rabbit['username']
+        password = _rabbit['password']
+    auth = pika.PlainCredentials(username=username,password=password)
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, port=port,credentials=auth))
     channel = connection.channel()
     channel.queue_declare(queue='adadmin')
     channel.basic_publish(exchange='',routing_key='adadmin',body=info,
                           )
 
 class Rabbit_Consumer(object):
+    ''' RabbitMQ消费者 '''
     def __init__(self):
-
-        self.host = RABBITMQ_HOST
-        self.port = RABBITMQ_PORT
-        if not self.host or self.host is None:
-            func = get_db.get_setting().model.objects.values('name','ipaddress','ports','model')
-            self.host = func[0]['ipaddress']
-            self.port = func[0]['ports']
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.host,port=self.port,
+        if _rabbit['username'] and _rabbit['password']:
+            username = _rabbit['username']
+            password = _rabbit['password']
+        auth = pika.PlainCredentials(username=username, password=password)
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.host,port=self.port,credentials=auth,
                                                                        socket_timeout=10,blocked_connection_timeout=1000))
         self.channel = connection.channel()
     def rabbit_consumer(self,request):

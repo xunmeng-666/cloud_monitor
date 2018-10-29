@@ -12,8 +12,10 @@
                         <option label="{{ namespace }}" value="{{ namespace }}"></option>
                     {% else %}
                         <option label="全部项目" value="all_data"></option>{% endif %}
-
-                    {% build_project_name %}
+                    {% for name in namespace_list %}
+                        <option href="/cluster/pods/?project={{ name }}" label="{{ name }}" value="{{ name }}"></option>
+{#                    {% build_project_name %}#}
+                    {% endfor %}
                 </select>
             </div>
         </div>
@@ -47,47 +49,61 @@
 
 <script>
 
+
+$(function () {
+    var urls = location.search;
+    console.log('url',urls)
+})
+
+
 $("#historical_data").change(function () {
-    setInterval(get_pod_info,5000);
+    var interval = setInterval(get_pod_info(interval),5000);
 {#    get_pod_info()#}
 });
 
-function get_pod_info() {
+function get_pod_info(interval) {
     namespaces = document.getElementById('historical_data').value;
     if (namespaces == 'now_data'){}
     else {
         $.ajax({
-            url: '/cluster/pods/?project=' + namespaces,
-            type: 'post',
+            url: '/cluster/pods/?project='+namespaces,
+            type: 'get',
             success: function (data) {
                 var pod_data = JSON.parse(data);
-                ele_tr = "<tr>";
-                for (info in pod_data) {
-                    console.log('data',info.status);
-                    ele_td = "<td onclick='pods_info(this)' style='cursor: pointer;'> \<" +
-                        "a href=/cluster/pods/"+pod_data[info].namespace +"/?pod_name="+pod_data[info].name+">"+ pod_data[info].name+ "</td>";
-                    if (pod_data[info].status == 'Running') {
-                        ele_td += "<td style='color: #18EC16'>" + pod_data[info].status + "</td>";
-                    }
-                    else if (pod_data[info].status == 'Failed') {
-                        ele_td += "<td style='color: #ec252f'>" + pod_data[info].status + "</td>";
-                    }
-                    else {
-                        ele_td += "<td style='color: #aa4136'>" + pod_data[info].status + "</td>";
-                    }
-                    ele_td += "<td>" + pod_data[info].namespace + "</td>";
-                    ele_td += "<td>" + pod_data[info].restart_count + "</td>";
-                    ele_td += "<td>" + pod_data[info].time + "</td>";
-                    ele_tr += ele_td + "</tr>"
+                if($.isEmptyObject(pod_data)){
+                    clearInterval(interval);
+                    pods_info(namespaces)
                 }
-                $("#pod_info").html(ele_tr)
+                else {
+                    ele_tr = "<tr>";
+                    for (info in pod_data) {
+
+                        ele_td = "<td style='cursor: pointer;'> \<" +
+                            "a href=/cluster/pods/"+pod_data[info].namespace +"/?pod_name="+pod_data[info].name+">"+ pod_data[info].name+ "</td>";
+                        if (pod_data[info].status == 'Running') {
+                            ele_td += "<td style='color: #18EC16'>" + pod_data[info].status + "</td>";
+                        }
+                        else if (pod_data[info].status == 'Failed') {
+                            ele_td += "<td style='color: #ec252f'>" + pod_data[info].status + "</td>";
+                        }
+                        else {
+                            ele_td += "<td style='color: #aa4136'>" + pod_data[info].status + "</td>";
+                        }
+                        ele_td += "<td>" + pod_data[info].namespace + "</td>";
+                        ele_td += "<td>" + pod_data[info].restart_count + "</td>";
+                        ele_td += "<td>" + pod_data[info].time + "</td>";
+                        ele_tr += ele_td + "</tr>"
+                    }
+
+                    $("#pod_info").html(ele_tr)
+                }
             }
         })
     }
 }
 
-function pods_info() {
-    console.log('11',$(this))
+function pods_info(namespace) {
+    alert("没有找到项目"+namespace+"的任何容器")
 }
 
 </script>

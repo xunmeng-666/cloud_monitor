@@ -53,14 +53,11 @@ class DeployList(models.Model):
         verbose_name = '部署日志'
         verbose_name_plural = '部署日志'
 
-
-
 class Files(models.Model):
     file_name = models.CharField(max_length=100)
     file_path = models.CharField(max_length=100)
     file_type = models.ForeignKey(FileType,related_name='files', on_delete=models.CASCADE)
     create_date = models.DateTimeField(auto_now_add=True)
-
 
     class Meta:
         verbose_name = "部署脚本"
@@ -90,12 +87,15 @@ class Host(models.Model):
 
 class Settings(models.Model):
     NAME_Choices=((0,'RabbitMQ'),(1,'ETCD'))
-    name = models.SmallIntegerField(choices=NAME_Choices)
+    name = models.SmallIntegerField(choices=NAME_Choices,unique=True)
     ipaddress = models.GenericIPAddressField()
     ports = models.IntegerField(default=2379)
     Choices = ((0, 'http'), (1, 'https'))
     model = models.SmallIntegerField(choices=Choices)
+    ca_cert = models.CharField(max_length=200,blank=True,null=True)
+
 
     class Meta:
         verbose_name = "系统配置信息"
         verbose_name_plural = "系统配置信息"
+

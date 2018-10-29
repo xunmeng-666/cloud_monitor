@@ -205,21 +205,14 @@
 
         var cid = $(this).closest('tr').find('th').eq(1).text();
         var list_func = $(this).closest('tr').find('th');
-        console.log('cid--',cid);
-        console.log('cid',cid);
-        console.log('this',$(this).length);
         id_All ="";
         for (var i = 0;i < $(this).length ;i++){
-{#        for (var i = 0;i < 2;i++){#}
             console.log('this[i]',$.trim(cid+','));
             id_All += $.trim(cid);
         }
-        console.log('id_list',id_All);
         get_id_info11(list_func,id_All);
     });
     function get_id_info11(list_func,id_All) {
-        console.log('Get ID Info');
-        console.log('list_func',list_func.eq(2).text());
         $.ajax({
             url: '/get_cluster_info/?idAll='+id_All,
             type: 'get',

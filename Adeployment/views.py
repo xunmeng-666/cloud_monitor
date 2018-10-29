@@ -1,22 +1,24 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.shortcuts import render,redirect,HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Q
-from django.contrib.auth.decorators import login_required
-from Adeployment.admin import site
-from Adeployment import forms
-from Adeployment.core.model_ansible import build_file
-from Adeployment.core.model_func import save_file,delete_file,save_db,get_db
-from Adeployment.core.rabbitmqs import Rabbit_Consumer
-from Adeployment.core.logger import logger
-from Adeployment.conf.conf import LOGS_INFO
-from dwebsocket import require_websocket,accept_websocket
+
 import json
 import logging
 import threading
-import subprocess
+
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Q
+from django.shortcuts import render, redirect, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from dwebsocket import require_websocket
+
+from Adeployment import forms
+from Adeployment.admin import site
+from Adeployment.core.logger import logger
+# from Adeployment.core.model_ansible import build_file
+from Adeployment.core.model_func import save_file, delete_file, save_db, get_db
+from Adeployment.core.rabbitmqs import Rabbit_Consumer
+
 
 # Create your views here.
 
@@ -184,23 +186,23 @@ def deploy_delfile(request):
         return HttpResponse(json.dumps({"status": 'true'}))
 
 
-@login_required
-@csrf_exempt
-def deploy_file(request):
-    logger('%s' % (request), logging.INFO)
-    save_db.save_logs_to_db("User:%s Access deploy file" % (request.user))
-    ret = {'status': 'true', 'error': 'false'}
-    if request.method == 'POST':
-        admin_class = admin_func().get('files')
-        inven_id = request.GET.get('inventory_id').split('=')[0]
-        playb_id = request.GET.get('playbook_id').split('=')[0]
-        t = threading.Thread(build_file(request,inven_id,playb_id,admin_class))
-        t.start()
-        t.join(10)
-        ret.update({'status': 'false','error': 'true'})
-        return HttpResponse(json.dumps(ret))
-    save_db.save_logs_to_db("User:%s Use get request faild" % (request.user))
-    return HttpResponse(status=404)
+# @login_required
+# @csrf_exempt
+# def deploy_file(request):
+#     logger('%s' % (request), logging.INFO)
+#     save_db.save_logs_to_db("User:%s Access deploy file" % (request.user))
+#     ret = {'status': 'true', 'error': 'false'}
+#     if request.method == 'POST':
+#         admin_class = admin_func().get('files')
+#         inven_id = request.GET.get('inventory_id').split('=')[0]
+#         playb_id = request.GET.get('playbook_id').split('=')[0]
+#         t = threading.Thread(build_file(request,inven_id,playb_id,admin_class))
+#         t.start()
+#         t.join(10)
+#         ret.update({'status': 'false','error': 'true'})
+#         return HttpResponse(json.dumps(ret))
+#     save_db.save_logs_to_db("User:%s Use get request faild" % (request.user))
+#     return HttpResponse(status=404)
 
 
 @login_required
@@ -298,7 +300,6 @@ def template_delete(request):
 def echo_logs(request):
     logger(request, logging.INFO)
     msg = request.websocket.wait()
-    print 'msg:',msg
     if msg == 'quit':
         run_mq = Rabbit_Consumer()
         run_mq.rabbit_close()
@@ -318,18 +319,15 @@ def echo_logs(request):
             request.websocket.send(content.encode('utf-8'))
         file.close()
         request.websocket.close()
-    elif msg == "system_logs":
-        file = subprocess.call(['tail','-f', LOGS_INFO],shell=False)
-        request.websocket.send(file)
+
     else:
         run_mq = Rabbit_Consumer()
         run_mq.rabbit_consumer(request)
-        
+
 @csrf_exempt
 @login_required
 def system_logs(request):
-    from datetime import datetime
-    from datetime import timedelta,date
+    from Adeployment.core.log_time import logtime
     if request.method == 'POST':
         date = request.GET.get('date')
         if date == 'one_data':funcDate = 1
@@ -337,21 +335,15 @@ def system_logs(request):
         elif date == "thirty_data":funcDate=30
         else:funcDate=30000
         sys_logs=[]
-        now_date = datetime.now().date()
-        end_date = now_date - timedelta(funcDate)
+        end_date = logtime(funcDate)
         admin_class = admin_func().get('logs')
         objs = admin_class.model.objects.values('name', 'date').filter(date__gt=end_date).order_by("-date")
         for i in objs:
             times =i["date"].strftime("%Y-%m-%d %H:%M:%S")
             content = i['name']
             sys_logs.append({'date':times,'name':content})
-        print 'type',sys_logs
         return HttpResponse(json.dumps(sys_logs))
     return render(request,'system/logs/system_logs.html',locals())
-
-@login_required
-def system_logs(request):
-    return render(request,'system/logs/system_logs.html')
 
 @login_required
 def settings(request,no_render=None):
@@ -370,14 +362,16 @@ def settings(request,no_render=None):
         querysets, filter_conditions = get_filter_objs(request, admin_class)
         querysets, q_val = get_search_objs(request, querysets, admin_class)
         querysets, new_order_key, order_column, last_orderby_key = get_orderby_objs(request, querysets)
-        paginator = Paginator(querysets, admin_class.list_per_page)  # Show 25 contacts per page
+        # paginator = Paginator(querysets, admin_class.list_per_page)  # Show 25 contacts per page
         page = request.GET.get('_page')
-        try:
-            querysets = paginator.page(page)
-        except PageNotAnInteger:
-            querysets = paginator.page(1)
-        except EmptyPage:
-            querysets = paginator.page(paginator.num_pages)
+
+
+        # try:
+        #     querysets = paginator.page(page)
+        # except PageNotAnInteger:
+        #     querysets = paginator.page(1)
+        # except EmptyPage:
+        #     querysets = paginator.page(paginator.num_pages)
 
     if no_render:
         return locals()
@@ -393,10 +387,9 @@ def del_settings(request):
         if request.method == 'POST':
             admin_class = admin_func().get('settings')
             for get_id in request.GET.get('idAll').split(','):
-                name = request.GET.get('named').split(',')
                 obj = admin_class.model.objects.get(id=get_id)
                 obj.delete()
-                save_db.save_logs_to_db("User:%s Delete system config:%s" % (request.user,name))
+                save_db.save_logs_to_db("User:%s Delete system config" % (request.user))
                 logger('删除成功', logging.INFO)
             return HttpResponse(json.dumps(ret))
     except ValueError:

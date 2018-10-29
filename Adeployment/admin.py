@@ -42,8 +42,8 @@ class LogsAdmin(BaseAdmin):
     list_filter = ["字段名"]
 
 class SettingsAdmin(BaseAdmin):
-    list_display = ("name","ipaddress","ports","model")
-    list_filter = ["名称",'IP','端口','HTTP协议']
+    list_display = ("name","ipaddress","ports","model","ca_ert")
+    list_filter = ["名称",'IP','端口','HTTP协议','证书']
 
 site.register(models.Host,HostInfoAdmin)
 site.register(models.Group,GroupInfoAdmin)

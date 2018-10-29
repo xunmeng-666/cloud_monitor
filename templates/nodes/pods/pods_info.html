@@ -39,7 +39,7 @@
                         <dl class="dl-horizontal">
                         {% for env in pods_info.spec.containers %}
                         {% for name in env.env %}
-                            <dt style="width: 300px; text-align: left">{{ name.name }}</dt>
+                            <dt style="text-align: left">{{ name.name }}</dt>
                             <dd>{{ name.value }}</dd>
                         {% endfor %}
                         {% endfor %}

@@ -1,0 +1,159 @@
+{% extends 'bash/base-index.html' %}
+{% block centent %}
+{% load cloud_tag %}
+
+<div id="content-header">
+    <div id="breadcrumb" >
+        <a href="/" title="Go to Home" class="tip-bottom"><i class="icon-home"></i>Home</a>/
+        <a href="/cluster/roles" title="Go to NameSpace" class="tip-bottom">用户列表</a>
+        <div class="span12" style="margin-left: 0px">
+            <div class="span4" style="margin-left: 0px">
+                <div class="text-left">
+                    <select id="historical_user" >
+                        <option label="选择用户" value="selete_user"></option>
+                        <option label="全部用户" value="all_user"></option>
+                        {% build_role_list %}
+
+                    </select>
+                </div>
+            </div>
+            <div class="span8">
+                <div class="span12" style="margin-left: 500px" >
+                    <div class="control-group">
+                        <div class="controls" id="uniform-undefined">
+                            <label class="span">显示管理权限用户:</label>
+                            <div class="span">
+                                <label>
+                                <input title="显示管理权限用户" onclick="fill_date(this)" type="checkbox" name="radios" checked /> ON</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="span7">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-sm-12">
+    <div class="ibox float-e-margins" id="all">
+        <div class="quick-actions">
+            <h3>Role List</h3>
+        </div>
+    </div>
+</div>
+<form method="post" onsubmit="return FormVerification(this)">{% csrf_token %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th style="width: 300px">登录用户</th>
+                <th style="width: 300px">用户类型</th>
+                <th style="width: 300px">数量</th>
+                <th style="width: 300px">创建时间</th>
+                
+            </tr>
+        </thead>
+        <tbody id="info_namespace">
+        </tbody>
+    </table>
+</form>
+
+
+
+
+
+<script>
+
+$(function () {
+    var user = document.getElementById('historical_user').value;
+    if (user == 'selete_user'){}
+    else {
+        get_role_info(user)
+    }
+});
+
+
+$("#historical_user").change(function () {
+    var user = document.getElementById('historical_user').value;
+    get_role_info(user)
+})
+
+var ele_list = [];
+
+function get_role_info(user) {
+
+    if (user == 'selete_user'){}
+    else {
+        $.ajax({
+            url: "/cluster/roles/?roles="+user,
+            type: 'get',
+            success: function (data) {
+                var ns_info = JSON.parse(data);
+                console.log('ns_info',ns_info);
+                ele_list = [];
+                for (var i in ns_info) {
+
+                    if(ns_info[i][0].kind == null && ns_info[i][0].name == null ) {
+                        ele_list.push({
+                            'user': i,
+                            'kind': 'User',
+                            'name': 'User',
+                            'pod_count': ns_info[i][0].namespace.length,
+                            'create_date': ns_info[i][0].create_date
+                        })
+                    }
+                    else {
+                        ele_list.push({
+                            'user': i,
+                            'kind': ns_info[i][0].kind.kind,
+                            'name': ns_info[i][0].kind.name,
+                            'pod_count': ns_info[i][0].namespace.length,
+                            'create_date': ns_info[i][0].create_date
+                        })
+                    }
+                }
+                fill_date();
+            }
+        })
+    }
+}
+
+function fill_date() {
+    var check_box = document.getElementsByName('radios')[0];
+    ele = "";
+
+    if (check_box.checked){
+        for(var i in ele_list){
+            ele_tr = "<tr >";
+            ele_td =  "<td>" + "<a href=/cluster/roles/info/?role="+ ele_list[i].user+">"+ ele_list[i].user + "</a>" + "</td>";
+            ele_td += "<td>" + ele_list[i].name +"</td>";
+            ele_td += "<td>" + ele_list[i].pod_count +"</td>";
+            ele_td += "<td>" + ele_list[i].create_date +"</td>";
+            ele_tr += ele_td;
+            ele_tr += "</tr>";
+            ele += ele_tr;
+
+        }
+    }
+    else {
+        for(var i in ele_list){
+            if(ele_list[i].name.search('User')){}
+            else {
+                ele_tr = "<tr>";
+                ele_td =  "<td>" + "<a href=/cluster/roles/info/?role="+ ele_list[i].user+">"+ ele_list[i].user + "</a>" + "</td>";
+                ele_td += "<td>" + ele_list[i].name +"</td>";
+                ele_td += "<td>" + ele_list[i].pod_count +"</td>";
+                ele_td += "<td>" + ele_list[i].create_date +"</td>";
+                ele_tr += ele_td;
+                ele_tr += "</tr>";
+                ele += ele_tr;
+            }
+        }
+    }
+    $("#info_namespace").html(ele);
+}
+
+
+</script>
+{% endblock %}

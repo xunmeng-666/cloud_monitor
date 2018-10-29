@@ -32,7 +32,12 @@
                                             {% if field.name == 'ipaddress' %}
                                                 <input type="test" name="{{ field.name }}" onclick="ipaddress(this)" style=" vertical-align:middle;line-height: 20px;">
                                             {% else %}
-                                                {{ field }}
+                                                {% if field.name == 'model' %}
+                                                    {% if field.value == "1" %}
+                                                        {{ field }}{% endif %}
+                                                {% else %}
+                                                    {{ field }}
+                                                {% endif %}
                                             {% endif %}
                                             <span style="color: red">{{ field.errors.0 }}  </span>
                                         </div>

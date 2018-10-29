@@ -1,0 +1,133 @@
+{% extends 'bash/base-index.html' %}
+{% block centent %}
+{% load cloud_tag %}
+
+<div id="content-header">
+    <div id="breadcrumb" >
+        <a href="/" title="Go to Home" class="tip-bottom"><i class="icon-home"></i>Home</a>/
+        <a href="/cluster/roles" title="Go to NameSpace" class="tip-bottom">用户列表</a>
+    </div>
+</div>
+<div class="col-sm-12">
+    <div class="ibox float-e-margins" id="all">
+        <div class="quick-actions">
+            <h3>Role {{ role }} Info</h3>
+        </div>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span6">
+            <div class="widget-box">
+                <div class="widget-title">
+                    <span class="icon"> <i class="icon-align-justify"></i> </span>
+                    <h5>Metadata</h5>
+                    <div class="text-right widget-content" style="padding: 8px">
+                        <a href="#" onclick="displayYaml(this)" data-toggle="modal" >查看YAML文件</a>
+                    </div>
+                </div>
+                <div class="widget-content nopadding">
+                    <div class="bs-example">
+                        <dl class="dl-horizontal">
+{#                            <dt style="text-align: left">Status</dt>#}
+                            {% for key,value in userInfo.items %}
+                                <dt style="text-align: left">labels</dt>
+                                <dd style="margin-left: 200px">{{ value.metadata.labels }}</dd>
+                                <dt style="text-align: left">creation_timestamp</dt>
+                                <dd class="c_timestamp" style="margin-left: 200px">{{ value.metadata.creation_timestamp}}</dd>
+                                <dt style="text-align: left">name</dt>
+                                <dd style="margin-left: 200px">{{ value.metadata.name}}</dd>
+                                <dt style="text-align: left">initializers</dt>
+                                <dd style="margin-left: 200px">{{ value.metadata.initializers}}</dd>
+                                <dt style="text-align: left">uid</dt>
+                                <dd style="margin-left: 200px">{{ value.metadata.uid}}</dd>
+                                <dt style="text-align: left">provider_name</dt>
+                                <dd style="margin-left: 200px">{{ value.provider_name}}</dd>
+                                <dt style="text-align: left">provider_user_name</dt>
+                                <dd style="margin-left: 200px">{{ value.provider_user_name}}</dd>
+                                <dt style="text-align: left;width: auto">self_link</dt>
+                                <dd style="margin-left: 200px">{{ value.metadata.self_link}}</dd>
+                            {% endfor %}
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="span6">
+            <div class="widget-box">
+                <div class="widget-title">
+                    <span class="icon"> <i class="icon-align-justify"></i> </span>
+                    <h5>User</h5>
+                    <div class="text-right widget-content" style="padding: 8px">
+                        <a href="#" onclick="displayYaml(this)" data-toggle="modal" >查看YAML文件</a>
+                    </div>
+                </div>
+                <div class="widget-content nopadding">
+                    <div class="bs-example">
+                        <dl class="dl-horizontal">
+                        {% for key,value in userInfo.items %}
+                            <dt style="text-align: left">name</dt>
+                            <dd>{{ value.user.name}}</dd>
+                            <dt style="text-align: left">kind</dt>
+                            <dd>{{ value.user.kind}}</dd>
+                            <dt style="text-align: left">uid</dt>
+                            <dd>{{ value.user.uid}}</dd>
+                        {% endfor %}
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="span11 sr-only" style="display: none">
+            <div class="widget-box">
+                <h3>YAML</h3>
+                {% for key,value in userInfo.items %}
+                <pre>{{ value }}</pre>
+                {% endfor %}
+                <div class="widget-plain modal-footer">
+                    <button type="button" onclick="quit(this)" class="btn btn-success quit">返回</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="form-table">
+    <form class="namespace_on_role" method="post" onsubmit="return FormVerification(this)">{% csrf_token %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th style="width: 300px">项目名称</th>
+                    <th style="width: 300px">项目权限</th>
+                    <th style="width: 300px">容器数量</th>
+                    <th style="width: 300px">创建时间</th>
+                </tr>
+            </thead>
+            <tbody id="info_namespace_on_role">
+            {% build_namespace_list_on_role objects %}
+            </tbody>
+        </table>
+    </form>
+</div>
+
+
+
+
+<script>
+
+
+function displayYaml(self) {
+    $('div .span6').css('display', 'none');
+    $('div .form-table').css('display', 'none');
+    $('div .span11').css('display', 'block');
+}
+
+function quit(self) {
+    $('div .span6').css('display','block');
+    $('div .form-table').css('display','block');
+    $('div .span11').css('display','none');
+}
+
+
+</script>
+{% endblock %}
